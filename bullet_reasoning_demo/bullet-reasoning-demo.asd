@@ -45,7 +45,6 @@
               :components
               ((:file "designator-config")
                (:file "pr2-metadata")
-               (:file "event-handlers")
                ;; (:module "executive-integration"
                ;;  :components
                ;;  ((:file "perception")
