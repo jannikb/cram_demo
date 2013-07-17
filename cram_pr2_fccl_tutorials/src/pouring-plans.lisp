@@ -26,25 +26,15 @@
 ;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;; POSSIBILITY OF SUCH DAMAGE.
 
-(in-package :cl-user)
+(in-package :pr2-fccl-tutorials)
 
-;;; PACKAGE DEFINITION WITH METHOD EXPORTS AND USED DESIGNATOR PROPERTIES.
+;; SOME NAIVE POURING PLANS.
+;; TO TEST THEM, MAKE SURE TO HAVE STARTED THE LAUNCH-FILE:
+;;  <launch-file>
 
-(desig-props:def-desig-package cram-pr2-fccl-tutorials
-  (:nicknames :pr2-fccl-tutorials)
-  (:use #:common-lisp)
-  (:import-from #:cram-language
-                def-top-level-cram-function
-                def-cram-function)
-  (:import-from #:cram-process-modules
-                with-process-modules-running)
-  (:import-from #:cram-designators
-                object)
-  (:import-from #:cram-plan-knowledge
-                achieve
-                pour-on-object)
-  (:import-from #:pr2-fccl-process-module
-                pr2-fccl-process-module)
-  (:import-from #:cram-plan-library
-                with-designators)
-  (:desig-properties #:type #:oven #:pancake-bottle))
+(def-top-level-cram-function pouring ()
+  "Entry point to top-level plan for pouring."
+  (with-process-modules-running (pr2-fccl-process-module)
+    (with-designators ((oven (object '((type oven))))
+                       (pancake-bottle (object '((type pancake-bottle)))))
+      (achieve `(pour-on-object ,pancake-bottle ,oven)))))

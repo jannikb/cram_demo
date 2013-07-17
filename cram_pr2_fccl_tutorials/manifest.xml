@@ -7,10 +7,13 @@
   <author>Georg Bartels</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
-  <depend package="cram_designators"/>
   <depend package="cram_language"/>
-  <depend package="process_modules"/>
-
+  <depend package="cram_process_modules"/>
+  <depend package="cram_designators"/>
+  <depend package="cram_plan_knowledge"/>
+  <depend package="cram_plan_library"/>
+  <depend package="pr2_fccl_process_module"/>
+  
   <rosdep name="sbcl"/>
 </package>
 

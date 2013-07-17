@@ -31,11 +31,16 @@
   :license "BSD"
   :description "Tutorial package showing how to use the feature constraints controllers in PR2 executives."
 
-  :depends-on (:designators ; provides package cram-designator-properties, and holds basic designator fact-groups
-               :cram-language ; provides the fluents apparatus
-               :process-modules ; provides process module protocol, e.g. def-process-module
-               )
+  ;; all the necessary dependencies, look into src/package.lisp to see what's imported
+  :depends-on (:designators
+               :cram-language
+               :process-modules
+               :designators
+               :cram-plan-knowledge
+               :pr2-fccl-process-module
+               :cram-plan-library)
   :components
   ((:module "src"
     :components
-    ((:file "package")))))
+    ((:file "package")
+     (:file "pouring-plans" :depends-on ("package"))))))
