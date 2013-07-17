@@ -1,0 +1,17 @@
+<package>
+  <description brief="cram_pr2_fccl_tutorials">
+
+     Tutorial package showing how to use the feature constraints controllers in PR2 executives.
+
+  </description>
+  <author>Georg Bartels</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <depend package="cram_designators"/>
+  <depend package="cram_language"/>
+  <depend package="process_modules"/>
+
+  <rosdep name="sbcl"/>
+</package>
+
+
