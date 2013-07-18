@@ -38,7 +38,9 @@
                :designators
                :cram-plan-knowledge
                :pr2-fccl-process-module
-               :cram-plan-library)
+               :cram-plan-library
+               :cram-feature-constraints
+               :cl-transforms)
   :components
   ((:module "src"
     :components

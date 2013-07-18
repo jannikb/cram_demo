@@ -13,6 +13,8 @@
   <depend package="cram_plan_knowledge"/>
   <depend package="cram_plan_library"/>
   <depend package="pr2_fccl_process_module"/>
+  <depend package="cram_feature_constraints"/>
+  <depend package="cl_transforms"/>
   
   <rosdep name="sbcl"/>
 </package>

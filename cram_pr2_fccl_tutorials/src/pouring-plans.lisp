@@ -38,3 +38,83 @@
     (with-designators ((oven (object '((type oven))))
                        (pancake-bottle (object '((type pancake-bottle)))))
       (achieve `(pour-on-object ,pancake-bottle ,oven)))))
+
+(def-goal (achieve (pour-on-object ?target-obj ?source-obj))
+  "Abstract high-level plan to pour some stuff from `?source-obj' onto `?target-obj'."
+  (with-designators
+    ((pouring-action (action `((type constraints)
+                               (to pour)
+                               (obj-acted-with ,?source-obj)
+                               (obj-acted-on ,?target-obj)))))
+    (equate pouring-action (reason-about-action pouring-action))
+    ;(perform pouring-action)
+    ))
+
+(def-cram-function reason-about-action (?action-desig)
+  "Function which enriches `?action-desig' with the constraint specs needed to perform it."
+  (with-desig-props (obj-acted-with obj-acted-on) ?action-desig
+    ;; all this could go to prolog pattern matching in some reasoning module
+    (assert (eq (desig-prop-value ?action-desig 'type) 'constraints)
+            () "Expected action ~a to have property `type' equal to `constraints'.~%"
+            ?action-desig)
+    (assert (eq (desig-prop-value ?action-desig 'to) 'pour)
+            () "Expected action ~a to have property `to' equal to `pour'.~%"
+            ?action-desig)
+    (assert obj-acted-with () "Action ~a needs an `obj-acted-with' property.~%"
+            ?action-desig)
+    (assert obj-acted-on () "Action ~a needs an `obj-acted-on' property.~%"
+            ?action-desig)
+    (assert (eq (desig-prop-value obj-acted-with 'type) 'pancake-bottle)
+            () "Expected object ~a to have property `type' equal to `pancake-bottle'.~%"
+            obj-acted-with)
+    (assert (eq (desig-prop-value obj-acted-on 'type) 'oven)
+            () "Expected object ~a to have property `type' equal to `oven'.~%"
+            obj-acted-on)
+    ;; hand-coding the feature and constraint descriptions for the motion
+    (let* ((bottle-top (make-plane-feature "bottle-cover-top" "/pancake_bottle" 
+                                           :position (make-3d-vector 0 0 0.0825)
+                                           :normal (make-3d-vector 0 0 0.03)))
+           (bottle-axis (make-line-feature  "bottle-main-axis" "/pancake_bottle"
+                                            :direction (make-3d-vector 0 0 0.1)))
+           (oven-center (make-plane-feature "oven-center" "/pancake"
+                                            :normal (make-3d-vector 0 0 0.1)))
+           (top-distance-constraint
+             (make-distance-constraint
+              "distance bottle-top to oven-center" bottle-top oven-center 0.03 0.07))
+           (top-height-constraint
+             (make-height-constraint
+              "height bottom-top over oven-center" bottle-top oven-center 0.25 0.3))
+           (bottle-upright-constraint
+             (make-perpendicular-constraint
+              "bottle upright" bottle-axis oven-center 0.95 1.2))
+           (bottle-pointing-at-oven-center
+             (make-pointing-at-constraint
+              "bottle pointing oven center" bottle-axis oven-center -0.1 0.1))
+           (bottle-tilting-down
+             (make-perpendicular-constraint
+              "bottle tilting down" bottle-axis oven-center -0.2 -0.1))
+           (constraints-phase1 (list top-distance-constraint
+                                     top-height-constraint
+                                     bottle-upright-constraint))
+           (constraints-phase2 (list top-distance-constraint
+                                     top-height-constraint
+                                     bottle-pointing-at-oven-center
+                                     bottle-tilting-down)))
+      ;; update our designators
+      (equate obj-acted-with 
+              (desig::copy-designator
+               obj-acted-on
+               :new-description `((features (feature ,oven-center)))))
+      (equate obj-acted-with 
+              (desig::copy-designator
+               obj-acted-with
+               :new-description `((features
+                                   (feature ,bottle-top)
+                                   (feature ,bottle-axis)))))
+      (equate ?action-desig 
+              (desig::copy-designator
+               ?action-desig
+               :new-description `((movement-plan
+                                   (movement (constraints ,constraints-phase1))
+                                   (movement (constraints ,constraints-phase2))
+                                   (movement (constraints ,constraints-phase1)))))))))

@@ -35,16 +35,33 @@
   (:use #:common-lisp)
   (:import-from #:cram-language
                 def-top-level-cram-function
-                def-cram-function)
+                def-cram-function
+                def-goal)
   (:import-from #:cram-process-modules
                 with-process-modules-running)
   (:import-from #:cram-designators
-                object)
+                object
+                action
+                with-desig-props
+                desig-prop-value
+                equate)
   (:import-from #:cram-plan-knowledge
                 achieve
                 pour-on-object)
   (:import-from #:pr2-fccl-process-module
                 pr2-fccl-process-module)
   (:import-from #:cram-plan-library
-                with-designators)
-  (:desig-properties #:type #:oven #:pancake-bottle))
+                with-designators
+                perform)
+  (:import-from #:cram-feature-constraints
+                make-distance-constraint
+                make-height-constraint
+                make-perpendicular-constraint
+                make-pointing-at-constraint
+                make-line-feature
+                make-plane-feature)
+  (:import-from #:cl-transforms
+                make-3d-vector)
+  (:desig-properties #:type #:oven #:pancake-bottle #:to #:pour #:constraints
+                     #:obj-acted-on #:obj-acted-with #:feature #:features
+                     #:feature #:movement-plan #:movement #:constraints))
