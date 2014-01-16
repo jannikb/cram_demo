@@ -13,6 +13,14 @@
   <license>BSD</license>
 
   <buildtool_depend>catkin</buildtool_depend>
-  <run_depend>cram_language</run_depend>
+
   <build_depend>cram_language</build_depend>
+  <build_depend>cram_designators</build_depend>
+  <build_depend>cram_process_modules</build_depend>
+  <build_depend>boxy_manipulation_process_module</build_depend>
+
+  <run_depend>cram_language</run_depend>
+  <run_depend>cram_designators</run_depend>
+  <run_depend>cram_process_modules</run_depend>
+  <run_depend>boxy_manipulation_process_module</run_depend>
 </package>

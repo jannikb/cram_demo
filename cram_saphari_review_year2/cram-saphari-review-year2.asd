@@ -7,8 +7,12 @@
   :maintainer "Georg Bartels <georg.bartels@cs.uni-bremen.de>"
   :licence "BSD"
   :description "CRAM code for Saphari Year 2 review"
-  :depends-on (:cram-language)
+  :depends-on (:cram-language 
+               :designators 
+               :process-modules
+               :boxy-manipulation-process-module)
   :components
   ((:module "src"
             :components
-            ((:file "package")))))
+            ((:file "package")
+             (:file "plan-lib" :depends-on ("package"))))))

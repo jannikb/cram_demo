@@ -28,5 +28,10 @@
 
 (in-package :cl-user)
 
-(defpackage :cram-saphari-review-year2
-  (:use #:common-lisp))
+(desig-props:def-desig-package cram-saphari-review-year2
+  (:use #:common-lisp)
+  (:import-from :cram-language top-level)
+  (:import-from :cram-designators make-designator action)
+  (:import-from :boxy-manipulation-process-module boxy-manipulation-process-module)
+  (:import-from :cram-process-modules with-process-modules-running pm-execute)
+  (:desig-properties :safety :to :monitor :detect :collisions))
