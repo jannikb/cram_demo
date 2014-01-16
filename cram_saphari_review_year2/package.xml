@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package>
+  <name>cram_saphari_review_year2</name>
+  <version>0.1.0</version>
+  <description>
+    Holds the demo-related CRAM code (plans, executive) for the year 2
+    review of EU project SAPHARI, year.
+  </description>
+  
+  <author email="georg.bartels@cs.uni-bremen.de">Georg Bartels</author>
+  <maintainer email="georg.bartels@cs.uni-bremen.de">Georg Bartels</maintainer>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+</package>
