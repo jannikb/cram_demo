@@ -26,19 +26,21 @@
 ;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;; POSSIBILITY OF SUCH DAMAGE.
 
-(in-package :cl-user)
+(in-package :cram-saphari-review-year2)
 
-(desig-props:def-desig-package cram-saphari-review-year2
-  (:use #:common-lisp)
-  (:import-from :cram-language top-level)
-  (:import-from :cram-designators 
-                make-designator 
-                action
-                action-desig? 
-                desig-prop
-                action-desig)
-  (:import-from :cram-language-designator-support with-designators)
-  (:import-from :boxy-manipulation-process-module boxy-manipulation-process-module)
-  (:import-from :cram-process-modules with-process-modules-running pm-execute)
-  (:import-from :cram-reasoning def-fact-group <- not)
-  (:desig-properties :safety :to :monitor :detect :collisions))
+(def-fact-group cram-saphari-designator-class ()
+  (<- (safety-action-desig? ?desig)
+    ;; Safety-action-desigs are action designators with a 'safety' slot.
+    (action-desig? ?desig)
+    (desig-prop ?desig (safety ?_)))
+
+  (<- (monitoring-action-desig? ?desig)
+    ;; Monitoring actions are action designators with a key-value-pair '(to monitor)'.
+    (action-desig? ?desig)
+    (desig-prop ?desig (monitor ?_))))
+
+(def-fact-group cram-saphari-monitoring (action-desig)
+  (<- (action-desig ?desig *collision-fluent*)
+    (monitoring-action-desig? ?desig)
+    (desig-prop ?desig (monitor collisions))
+    (desig-prop ?desig (detect ?_))))

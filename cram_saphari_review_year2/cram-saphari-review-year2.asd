@@ -9,10 +9,13 @@
   :description "CRAM code for Saphari Year 2 review"
   :depends-on (:cram-language 
                :designators 
+               :cram-language-designator-support
                :process-modules
+               :cram-reasoning
                :boxy-manipulation-process-module)
   :components
   ((:module "src"
             :components
             ((:file "package")
-             (:file "sandbox" :depends-on ("package"))))))
+             (:file "reasoning" :depends-on ("package"))
+             (:file "sandbox" :depends-on ("package" "reasoning"))))))

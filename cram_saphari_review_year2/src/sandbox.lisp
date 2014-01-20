@@ -28,6 +28,8 @@
 
 (in-package :cram-saphari-review-year2)
 
+(defvar *collision-fluent* 2)
+
 (defun start-demo ()
   (let ((monitoring-action (make-designator 
                             'action
@@ -133,3 +135,13 @@
                      (perform-with-safety))
                    (values counter increment (cpl:value fluent)))))
           (perform-with-safety))))))
+
+(defun reasoning-test ()
+  (cpl:top-level
+    (with-designators ((monitoring-action
+                        (action
+                         '((monitor collisions)
+                           (detect (:STRONG-COLLISION))))))
+      (let ((collision-fluent 
+              (eval (cram-designators:reference monitoring-action))))
+        (format t "~%~a~%" collision-fluent)))))
