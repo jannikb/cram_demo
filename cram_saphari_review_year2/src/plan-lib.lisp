@@ -29,17 +29,47 @@
 (in-package :cram-saphari-review-year2)
 
 (defun start-demo ()
-  (top-level
-    (with-process-modules-running (boxy-manipulation-process-module)
-      (let ((action1 (make-designator 'action '((no description))))
-            (monitoring-action (make-designator 
-                                'action
-                                '((to monitor)
-                                  (detect collisions)))))
-        (format t "~%~a~%" action1)
-        (format 
-         t "~%~a~%"
-         (pm-execute 'boxy-manipulation-process-module monitoring-action))))))
+  (let ((monitoring-action (make-designator 
+                            'action
+                            '((to monitor)
+                              (detect collisions)))))
+    (top-level
+      (cpl:with-tags
+        (with-process-modules-running (boxy-manipulation-process-module)
+          (cpl:pursue
+            (:tag execute
+              (progn
+                ;; takes ~2s
+                (format 
+                 t "~%~a~%"
+                 (pm-execute 'boxy-manipulation-process-module monitoring-action))))
+            (:tag monitor
+              (progn
+                (cpl:sleep* 0.5)
+                (cpl-impl:with-task-suspended (execute)
+                  (format t "~%suspending task~%"))
+                (cpl:sleep* 2)))))))))
+
+(defun desig-tests ()
+  (let ((monitoring-action (make-designator 
+                            'action
+                            '((to monitor)
+                              (detect collisions)))))
+    (top-level
+      (with-process-modules-running (boxy-manipulation-process-module)
+        (pm-execute 'boxy-manipulation-process-module monitoring-action)))
+    (let ((new-desig
+            (cram-designators:equate 
+             monitoring-action
+             (cram-designators:make-effective-designator monitoring-action))))
+      (with-slots ((new-data cram-designators::data)
+                   (new-solution cram-designators::solutions)) new-desig
+        (with-slots ((old-data cram-designators::data)
+                     (old-solution cram-designators::solutions)) monitoring-action
+          (setf new-data old-data)
+          (setf new-solution old-solution)))
+      new-desig)))
+        
 
 (defun fluent-test ()
   (top-level
@@ -55,6 +85,18 @@
          (progn
            (cpl:wait-for (cpl:eql fluent 8))
            11))))))
+
+(defun fluent-test2 ()
+  (top-level
+    (let ((numbers (list 1 1 2 2 3 3 4 4))
+          (fluent (cpl:make-fluent :value 0)))
+      (cpl:pursue
+        (mapcar (lambda (number)
+                  (cpl:sleep* 0.3)
+                  (setf (cpl:value fluent) number))
+                numbers)
+        (cpl:whenever ((cpl:pulsed fluent))
+          (format t "~%~a~%" (cpl:value fluent)))))))
 
 (defun velocity-tests ()
   (top-level
