@@ -15,4 +15,4 @@
   ((:module "src"
             :components
             ((:file "package")
-             (:file "plan-lib" :depends-on ("package"))))))
+             (:file "sandbox" :depends-on ("package"))))))
