@@ -39,7 +39,5 @@
                 desig-prop
                 action-desig)
   (:import-from :cram-language-designator-support with-designators)
-  (:import-from :boxy-manipulation-process-module boxy-manipulation-process-module)
-  (:import-from :cram-process-modules with-process-modules-running pm-execute)
   (:import-from :cram-reasoning def-fact-group <- not)
   (:desig-properties :safety :to :monitor :detect :collisions))

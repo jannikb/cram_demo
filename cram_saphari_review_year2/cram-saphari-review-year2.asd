@@ -10,9 +10,7 @@
   :depends-on (:cram-language
                :designators 
                :cram-language-designator-support
-               :process-modules
                :cram-reasoning
-               :boxy-manipulation-process-module
                :cram-beasty)
   :components
   ((:module "src"

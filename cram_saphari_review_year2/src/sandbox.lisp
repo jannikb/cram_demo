@@ -28,47 +28,47 @@
 
 (in-package :cram-saphari-review-year2)
 
-(defun start-demo ()
-  (let ((monitoring-action (make-designator 
-                            'action
-                            '((to monitor)
-                              (detect collisions)))))
-    (top-level
-      (cpl:with-tags
-        (with-process-modules-running (boxy-manipulation-process-module)
-          (cpl:pursue
-            (:tag execute
-              (progn
-                ;; takes ~2s
-                (format 
-                 t "~%~a~%"
-                 (pm-execute 'boxy-manipulation-process-module monitoring-action))))
-            (:tag monitor
-              (progn
-                (cpl:sleep* 0.5)
-                (cpl-impl:with-task-suspended (execute)
-                  (format t "~%suspending task~%"))
-                (cpl:sleep* 2)))))))))
+;; (defun start-demo ()
+;;   (let ((monitoring-action (make-designator 
+;;                             'action
+;;                             '((to monitor)
+;;                               (detect collisions)))))
+;;     (top-level
+;;       (cpl:with-tags
+;;         (with-process-modules-running (boxy-manipulation-process-module)
+;;           (cpl:pursue
+;;             (:tag execute
+;;               (progn
+;;                 ;; takes ~2s
+;;                 (format 
+;;                  t "~%~a~%"
+;;                  (pm-execute 'boxy-manipulation-process-module monitoring-action))))
+;;             (:tag monitor
+;;               (progn
+;;                 (cpl:sleep* 0.5)
+;;                 (cpl-impl:with-task-suspended (execute)
+;;                   (format t "~%suspending task~%"))
+;;                 (cpl:sleep* 2)))))))))
 
-(defun desig-tests ()
-  (let ((monitoring-action (make-designator 
-                            'action
-                            '((to monitor)
-                              (detect collisions)))))
-    (top-level
-      (with-process-modules-running (boxy-manipulation-process-module)
-        (pm-execute 'boxy-manipulation-process-module monitoring-action)))
-    (let ((new-desig
-            (cram-designators:equate 
-             monitoring-action
-             (cram-designators:make-effective-designator monitoring-action))))
-      (with-slots ((new-data cram-designators::data)
-                   (new-solution cram-designators::solutions)) new-desig
-        (with-slots ((old-data cram-designators::data)
-                     (old-solution cram-designators::solutions)) monitoring-action
-          (setf new-data old-data)
-          (setf new-solution old-solution)))
-      new-desig)))
+;; (defun desig-tests ()
+;;   (let ((monitoring-action (make-designator 
+;;                             'action
+;;                             '((to monitor)
+;;                               (detect collisions)))))
+;;     (top-level
+;;       (with-process-modules-running (boxy-manipulation-process-module)
+;;         (pm-execute 'boxy-manipulation-process-module monitoring-action)))
+;;     (let ((new-desig
+;;             (cram-designators:equate 
+;;              monitoring-action
+;;              (cram-designators:make-effective-designator monitoring-action))))
+;;       (with-slots ((new-data cram-designators::data)
+;;                    (new-solution cram-designators::solutions)) new-desig
+;;         (with-slots ((old-data cram-designators::data)
+;;                      (old-solution cram-designators::solutions)) monitoring-action
+;;           (setf new-data old-data)
+;;           (setf new-solution old-solution)))
+;;       new-desig)))
         
 
 (defun fluent-test ()
