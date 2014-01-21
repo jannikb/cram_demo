@@ -28,8 +28,6 @@
 
 (in-package :cram-saphari-review-year2)
 
-(defvar *collision-fluent* 2)
-
 (defun start-demo ()
   (let ((monitoring-action (make-designator 
                             'action
@@ -90,7 +88,9 @@
 
 (defun fluent-test2 ()
   (top-level
-    (let ((numbers (list 1 1 2 2 3 3 4 4))
+    (let ((numbers (list nil nil nil :CONTACT :CONTACT nil :LIGHT-COLLISION :CONTACT
+                         :CONTACT nil nil :STRONG-COLLISION :STRONG-COLLISION
+                         :SEVERE-COLLISION :STRONG-COLLISION :STRONG-COLLISION))
           (fluent (cpl:make-fluent :value 0)))
       (cpl:pursue
         (mapcar (lambda (number)

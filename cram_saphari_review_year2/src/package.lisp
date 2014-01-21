@@ -29,8 +29,9 @@
 (in-package :cl-user)
 
 (desig-props:def-desig-package cram-saphari-review-year2
-  (:use #:common-lisp)
-  (:import-from :cram-language top-level)
+  (:use #:common-lisp
+        #:cram-beasty)
+  (:import-from :cram-language top-level fl-funcall)
   (:import-from :cram-designators 
                 make-designator 
                 action

@@ -7,15 +7,17 @@
   :maintainer "Georg Bartels <georg.bartels@cs.uni-bremen.de>"
   :licence "BSD"
   :description "CRAM code for Saphari Year 2 review"
-  :depends-on (:cram-language 
+  :depends-on (:cram-language
                :designators 
                :cram-language-designator-support
                :process-modules
                :cram-reasoning
-               :boxy-manipulation-process-module)
+               :boxy-manipulation-process-module
+               :cram-beasty)
   :components
   ((:module "src"
             :components
             ((:file "package")
-             (:file "reasoning" :depends-on ("package"))
-             (:file "sandbox" :depends-on ("package" "reasoning"))))))
+             (:file "robot-configuration" :depends-on ("package"))
+             (:file "reasoning" :depends-on ("package" "robot-configuration"))
+             (:file "sandbox" :depends-on ("package" "reasoning" "robot-configuration"))))))
