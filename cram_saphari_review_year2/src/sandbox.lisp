@@ -28,6 +28,40 @@
 
 (in-package :cram-saphari-review-year2)
 
+(cpl:def-top-level-cram-function tag-test ()
+  (seq
+    (tag-test2 1)
+    (tag-test2 2)))
+
+(cpl:def-cram-function tag-test2 (number)
+  (let ((shared-var number))
+    (pursue 
+     (:tag task1
+       (retry-after-suspension
+         (progn
+           (format t "task1: ~a~%" shared-var)
+           (cpl:sleep* 0.2))))
+     (with-task-suspended (task1)
+       (format t "task2: decrementing...~%")
+       (decf shared-var)
+       (cpl:sleep* 0.5)))))
+
+(defun pursue-test ()
+  (top-level
+   (cpl:with-tags
+       (cpl:pursue
+        (:tag printing
+          (cpl-impl:retry-after-suspension
+            (progn 
+              (format t "printing~%")
+              (cpl:sleep* 1))))
+        (:tag suspending
+          (progn
+            (cpl:sleep* 0.5)
+            (cpl-impl:with-task-suspended (printing)
+              (format t "~%SUSPENDING~%"))))))))
+              
+  
 ;; (defun start-demo ()
 ;;   (let ((monitoring-action (make-designator 
 ;;                             'action

@@ -26,20 +26,13 @@
 ;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;; POSSIBILITY OF SUCH DAMAGE.
 
-(in-package :cl-user)
+(in-package :cram-saphari-review-year2)
 
-(desig-props:def-desig-package cram-saphari-review-year2
-  (:use #:common-lisp
-        #:cram-beasty)
-  (:import-from :cram-language 
-                top-level fl-funcall with-tags pursue tag retry-after-suspension
-                whenever pulsed value with-task-suspended seq)
-  (:import-from :cram-designators 
-                make-designator 
-                action
-                action-desig? 
-                desig-prop
-                action-desig)
-  (:import-from :cram-language-designator-support with-designators)
-  (:import-from :cram-reasoning def-fact-group <- not)
-  (:desig-properties :safety :to :monitor :detect :collisions))
+(defun init-saphari-demo ()
+  (init-arm))
+
+(defun cleanup-saphari-demo ()
+  (cleanup-arm))
+
+(roslisp-utilities:register-ros-init-function init-saphari-demo)
+(roslisp-utilities:register-ros-cleanup-function cleanup-saphari-demo)
