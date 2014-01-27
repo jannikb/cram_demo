@@ -35,7 +35,7 @@
 
 (defparameter *beasty-action-name* "/BEASTY"
   "ROS name of the Beasty action server for the arm.")
-(defparameter *simulation-flag* t
+(defparameter *simulation-flag* nil
   "Flag indicating whether the LWR is a simulated arm.")
 (defparameter *tool-weight* 0.47
   "Weight of the tool mounted to the LWR in kg.")
@@ -44,7 +44,7 @@
 (defparameter *arm-tool*
   (make-instance 'beasty-tool :mass *tool-weight* :com *tool-com*)
   "Modelling of tool mounted on LWR.")
-(defparameter *gravity-vector* #(0 0 9.81 0 0 0)
+(defparameter *gravity-vector* #(-7.358 4.248 4.905 0 0 0) ;#(0 0 9.81 0 0 0)
   "_NEGATIV_ 6D acceleration vector indicating in which direction gravity is acting on the
   arm. NOTE: Is expressed w.r.t. to the base-frame of the left arm. First translational
  (x,y,z), then rotational (x,y,z) acceleration.")  
@@ -57,6 +57,8 @@
                  :tool-configuration *arm-tool* 
                  :base-configuration *arm-base-config*)
   "Modelling of entire initial configuration of the LWR.")
+(defparameter *arm-base-frame-id* "/left_arm_base_link"
+  "TF frame-id of base of the LWR arm.")
 
 (defun init-arm ()
   "Inits connection to beasty controller of LWR arm."
