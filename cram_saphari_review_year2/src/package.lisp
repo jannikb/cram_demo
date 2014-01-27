@@ -30,7 +30,11 @@
 
 (desig-props:def-desig-package cram-saphari-review-year2
   (:use #:common-lisp
-        #:cram-beasty)
+        #:roslisp
+        #:cram-beasty
+        #:cl-human-shapes
+        #:cl-3d-shapes
+        #:cl-transforms)
   (:import-from :cram-language 
                 top-level fl-funcall with-tags pursue tag retry-after-suspension
                 whenever pulsed value with-task-suspended seq)

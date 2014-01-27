@@ -29,10 +29,12 @@
 (in-package :cram-saphari-review-year2)
 
 (defun init-saphari-demo ()
-  (init-arm))
+  ;(init-arm)
+  (init-human-perception))
 
 (defun cleanup-saphari-demo ()
-  (cleanup-arm))
+  ;(cleanup-arm)
+  (cleanup-human-perception))
 
 (roslisp-utilities:register-ros-init-function init-saphari-demo)
 (roslisp-utilities:register-ros-cleanup-function cleanup-saphari-demo)
