@@ -17,14 +17,16 @@
                :saphari_msgs-msg
                :cl-human-shapes
                :cl-3d-shapes
-               :cl-transforms)
+               :cl-transforms
+               :cl-tf)
   :components
   ((:module "src"
             :components
             ((:file "package")
+             (:file "tf" :depends-on ("package"))
              (:file "human-perception" :depends-on ("package"))
              (:file "robot-configuration" :depends-on ("package"))
-             (:file "ros-misc" :depends-on ("package" "robot-configuration" "human-perception"))
+             (:file "ros-misc" :depends-on ("package" "robot-configuration" "human-perception" "tf"))
              (:file "demo-plans" :depends-on ("package" "robot-configuration"))
              (:file "reasoning" :depends-on ("package" "robot-configuration"))
              (:file "sandbox" :depends-on ("package" "reasoning" "robot-configuration"))))))

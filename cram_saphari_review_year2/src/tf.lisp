@@ -28,15 +28,10 @@
 
 (in-package :cram-saphari-review-year2)
 
-(defun init-saphari-demo ()
-  (init-arm)
-  (init-tf)
-  (init-human-perception))
+(defvar *tf* nil
+  "Variable holding a tf-listener.")
 
-(defun cleanup-saphari-demo ()
-  (cleanup-arm)
-  (cleanup-tf)
-  (cleanup-human-perception))
-
-(roslisp-utilities:register-ros-init-function init-saphari-demo)
-(roslisp-utilities:register-ros-cleanup-function cleanup-saphari-demo)
+(defun init-tf ()
+  (setf *tf* (make-instance 'cl-tf:transform-listener)))
+(defun cleanup-tf ()
+  (cl-tf::destroy *tf*))
