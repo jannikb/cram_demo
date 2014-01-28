@@ -35,7 +35,7 @@
 
 (defparameter *beasty-action-name* "/BEASTY"
   "ROS name of the Beasty action server for the arm.")
-(defparameter *simulation-flag* nil
+(defparameter *simulation-flag* t
   "Flag indicating whether the LWR is a simulated arm.")
 (defparameter *tool-weight* 0.47
   "Weight of the tool mounted to the LWR in kg.")
@@ -60,6 +60,11 @@
 (defparameter *arm-base-frame-id* "/left_arm_base_link"
   "TF frame-id of base of the LWR arm.")
 
+(defparameter *ptu* nil
+  "Variable holding interface of PTU moving the head.")
+(defparameter *ptu-action-name* "/ptu"
+  "ROS action-name of the PTU moving the head.")
+
 (defun init-arm ()
   "Inits connection to beasty controller of LWR arm."
   (unless *arm* 
@@ -74,3 +79,12 @@
     (setf *arm* nil))
   (when *collision-fluent*
     (setf *collision-fluent* nil)))
+
+(defun init-ptu ()
+  (unless *ptu*
+    (setf *ptu* (cram-ptu:make-ptu-interface *ptu-action-name*))))
+
+(defun cleanup-ptu ()
+  (when *ptu*
+    (cram-ptu:cleanup-ptu-interface *ptu*)
+    (setf *arm* nil)))

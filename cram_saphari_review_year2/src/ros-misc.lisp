@@ -31,11 +31,13 @@
 (defun init-saphari-demo ()
   (init-arm)
   (init-tf)
+  (init-ptu)
   (init-human-perception))
 
 (defun cleanup-saphari-demo ()
   (cleanup-arm)
   (cleanup-tf)
+  (cleanup-ptu)
   (cleanup-human-perception))
 
 (roslisp-utilities:register-ros-init-function init-saphari-demo)

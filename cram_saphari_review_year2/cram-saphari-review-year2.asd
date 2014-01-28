@@ -18,7 +18,8 @@
                :cl-human-shapes
                :cl-3d-shapes
                :cl-transforms
-               :cl-tf)
+               :cl-tf
+               :cram-ptu)
   :components
   ((:module "src"
             :components
