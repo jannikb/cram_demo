@@ -19,7 +19,8 @@
                :cl-3d-shapes
                :cl-transforms
                :cl-tf
-               :cram-ptu)
+               :cram-ptu
+               :cram-ik-proxy)
   :components
   ((:module "src"
             :components

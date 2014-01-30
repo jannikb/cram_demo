@@ -65,12 +65,20 @@
 (defparameter *ptu-action-name* "/ptu"
   "ROS action-name of the PTU moving the head.")
 
+(defparameter *ik-proxy* nil
+  "Variable holding interface to IK proxy for the arm.")
+(defparameter *ik-proxy-service-name* "/lwr_ik"
+  "ROS namespace in which IK solver advertises its service.")
+
 (defun init-arm ()
   "Inits connection to beasty controller of LWR arm."
   (unless *arm* 
     (setf *arm* (make-beasty-interface *beasty-action-name* *arm-config*)))
   (when *arm*
-    (setf *collision-fluent* (fl-funcall #'get-strongest-collision (state *arm*)))))
+    (setf *collision-fluent* (fl-funcall #'get-strongest-collision (state *arm*))))
+  ;; (unless *ik-proxy*
+  ;;   (setf *ik-proxy* (cram-ik-proxy:make-ik-proxy-interface *ik-proxy-service-name*)))
+  )
 
 (defun cleanup-arm ()
   "Stops LWR arm, and closes connection to beasty action server."
@@ -78,7 +86,11 @@
     (cleanup-beasty-interface *arm*)
     (setf *arm* nil))
   (when *collision-fluent*
-    (setf *collision-fluent* nil)))
+    (setf *collision-fluent* nil))
+  ;; (when *ik-proxy*
+  ;;   (cram-ik-proxy:cleanup-ik-proxy-interface *ik-proxy*)
+  ;;   (setf *ik-proxy* nil))
+  )
 
 (defun init-ptu ()
   (unless *ptu*
@@ -87,4 +99,4 @@
 (defun cleanup-ptu ()
   (when *ptu*
     (cram-ptu:cleanup-ptu-interface *ptu*)
-    (setf *arm* nil)))
+    (setf *ptu* nil)))
