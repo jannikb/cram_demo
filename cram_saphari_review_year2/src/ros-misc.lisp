@@ -32,13 +32,15 @@
   (init-arm)
   (init-tf)
   (init-ptu)
-  (init-human-perception))
+  (init-human-perception)
+  (init-wsg50))
 
 (defun cleanup-saphari-demo ()
   (cleanup-arm)
   (cleanup-tf)
   (cleanup-ptu)
-  (cleanup-human-perception))
+  (cleanup-human-perception)
+  (cleanup-wsg50))
 
 (roslisp-utilities:register-ros-init-function init-saphari-demo)
 (roslisp-utilities:register-ros-cleanup-function cleanup-saphari-demo)

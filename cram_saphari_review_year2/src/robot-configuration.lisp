@@ -35,11 +35,11 @@
 
 (defparameter *beasty-action-name* "/BEASTY"
   "ROS name of the Beasty action server for the arm.")
-(defparameter *simulation-flag* t
+(defparameter *simulation-flag* nil
   "Flag indicating whether the LWR is a simulated arm.")
-(defparameter *tool-weight* 0.47
+(defparameter *tool-weight* 1.8
   "Weight of the tool mounted to the LWR in kg.")
-(defparameter *tool-com* (cl-transforms:make-3d-vector -0.04 -0.04 0.0)
+(defparameter *tool-com* (cl-transforms:make-3d-vector 0.0 0.0 0.17)
   "Center of mass of tool mounted on the arm.")
 (defparameter *arm-tool*
   (make-instance 'beasty-tool :mass *tool-weight* :com *tool-com*)
@@ -70,15 +70,19 @@
 (defparameter *ik-proxy-service-name* "/lwr_ik"
   "ROS namespace in which IK solver advertises its service.")
 
+(defparameter *wsg50* nil
+  "Variable holding the interface of the WSG50 gripper on the left arm.")
+(defparameter *wsg50-namespace* "/wsg_50"
+  "ROS namespace in which the gripper controller advertises its services.")
+
 (defun init-arm ()
   "Inits connection to beasty controller of LWR arm."
   (unless *arm* 
     (setf *arm* (make-beasty-interface *beasty-action-name* *arm-config*)))
   (when *arm*
     (setf *collision-fluent* (fl-funcall #'get-strongest-collision (state *arm*))))
-  ;; (unless *ik-proxy*
-  ;;   (setf *ik-proxy* (cram-ik-proxy:make-ik-proxy-interface *ik-proxy-service-name*)))
-  )
+  (unless *ik-proxy*
+    (setf *ik-proxy* (cram-ik-proxy:make-ik-proxy-interface *ik-proxy-service-name*))))
 
 (defun cleanup-arm ()
   "Stops LWR arm, and closes connection to beasty action server."
@@ -87,10 +91,9 @@
     (setf *arm* nil))
   (when *collision-fluent*
     (setf *collision-fluent* nil))
-  ;; (when *ik-proxy*
-  ;;   (cram-ik-proxy:cleanup-ik-proxy-interface *ik-proxy*)
-  ;;   (setf *ik-proxy* nil))
-  )
+  (when *ik-proxy*
+    (cram-ik-proxy:cleanup-ik-proxy-interface *ik-proxy*)
+    (setf *ik-proxy* nil)))
 
 (defun init-ptu ()
   (unless *ptu*
@@ -100,3 +103,11 @@
   (when *ptu*
     (cram-ptu:cleanup-ptu-interface *ptu*)
     (setf *ptu* nil)))
+
+(defun init-wsg50 ()
+  (unless *wsg50*
+    (setf *wsg50* (cram-wsg50:make-wsg50-interface *wsg50-namespace*))))
+
+(defun cleanup-wsg50 ()
+  (when *wsg50*
+    (setf *wsg50* nil)))

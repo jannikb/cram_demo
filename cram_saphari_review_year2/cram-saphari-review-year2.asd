@@ -20,7 +20,8 @@
                :cl-transforms
                :cl-tf
                :cram-ptu
-               :cram-ik-proxy)
+               :cram-ik-proxy
+               :cram-wsg50)
   :components
   ((:module "src"
             :components
@@ -29,6 +30,7 @@
              (:file "human-perception" :depends-on ("package"))
              (:file "robot-configuration" :depends-on ("package"))
              (:file "ros-misc" :depends-on ("package" "robot-configuration" "human-perception" "tf"))
-             (:file "demo-plans" :depends-on ("package" "robot-configuration"))
+             (:file "motion-utils" :depends-on ("package" "robot-configuration" "tf"))
+             (:file "demo-plans" :depends-on ("package" "robot-configuration" "motion-utils"))
              (:file "reasoning" :depends-on ("package" "robot-configuration"))
              (:file "sandbox" :depends-on ("package" "reasoning" "robot-configuration"))))))

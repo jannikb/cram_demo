@@ -36,6 +36,10 @@
   #(-0.623 0.772 -0.903 -0.672 0.657 0.621 -0.02)
   "End configuration for the reflexxes demo.")
 
+(defparameter *pre-grasp-dummy-config*
+  #(-1.556 1.167 -0.843 -1.905 -0.582 0.451 -0.073)
+  "Dummy config to test grasping motions.")
+
 (defparameter *high-joint-speed*
   (make-array 7 :initial-element 0.5))
 (defparameter *low-joint-speed*
@@ -46,6 +50,34 @@
 (defparameter *low-joint-acc*
   (make-array 7 :initial-element 0.5))
 
+(cpl:def-top-level-cram-function grasping-demo ()
+  (init-arms)
+  (move-down-until-touch)
+  (cram-wsg50:close-gripper *wsg50* :width 16)
+  (move-up)
+  (cram-wsg50:open-gripper *wsg50*))
+
+(cpl:def-cram-function init-arms ()
+  (let ((goal (make-joint-impedance-goal :joint-goal *pre-grasp-dummy-config*)))
+    (command-beasty *arm* goal)))
+
+(cpl:def-cram-function move-down-until-touch ()
+  (let ((safety (make-safety-settings
+                 (list 
+                  (make-beasty-reflex :CONTACT :SOFT-STOP)))))
+    (pursue
+      (cpl:wait-for (cpl:not (cpl:eql *collision-fluent* :NO-CONTACT)))
+      (loop do
+        (move-arm-down 0.05 safety)))
+    (move-arm-down -0.01 safety)))
+
+(cpl:def-cram-function move-up ()
+  (let ((safety (make-safety-settings
+                 (list 
+                  (make-beasty-reflex :CONTACT :IGNORE)
+                  (make-beasty-reflex :LIGHT-COLLISION :SOFT-STOP)))))
+    (move-arm-down -0.07 safety)))
+    
 (cpl:def-top-level-cram-function reflex-demo ()
   (loop for i to 1 do
     (seq
