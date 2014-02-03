@@ -77,7 +77,31 @@
                   (make-beasty-reflex :CONTACT :IGNORE)
                   (make-beasty-reflex :LIGHT-COLLISION :SOFT-STOP)))))
     (move-arm-down -0.07 safety)))
-    
+
+(cpl:def-top-level-cram-function human-perception-demo ()
+  (let ((distance-fluent (fl-funcall #'calculate-human-distance *human-fluent*))
+        (distance-threshold 1.5)
+        (goal1 (make-joint-impedance-goal :joint-goal #(-2.5 0.53 0 -1 0 0.53 0)))
+        (goal2 (make-joint-impedance-goal :joint-goal #(-2.5 1.23 0 -1.3 0 0.53 0)))
+        (safety (make-safety-settings
+                 (list
+                  (make-beasty-reflex :CONTACT :IGNORE)
+                  (make-beasty-reflex :LIGHT-COLLISION :JOINT-IMP)
+                  (make-beasty-reflex :STRONG-COLLISION :SOFT-STOP)
+                  (make-beasty-reflex :SEVERE-COLLISION :HARD-STOP)))))
+    (pursue
+      (:tag motion-task
+        (cpl:retry-after-suspension
+          (loop for i to 2 do
+            (seq
+              (command-beasty *arm* goal1 safety)
+              (command-beasty *arm* goal2 safety)))))
+      (whenever ((pulsed distance-fluent))
+        (when (cpl:value (cpl:< distance-fluent distance-threshold))
+          (cpl:with-task-suspended (motion-task)
+            (stop-beasty *arm*)
+            (cpl-impl:wait-for (cpl:> distance-fluent distance-threshold))))))))
+              
 (cpl:def-top-level-cram-function reflex-demo ()
   (loop for i to 1 do
     (seq
