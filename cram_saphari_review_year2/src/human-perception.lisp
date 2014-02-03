@@ -87,3 +87,10 @@
           (rassoc body-part-code (symbol-codes 'saphari_msgs-msg:BodyPart))))
     (when body-part-symbol-code
       (car body-part-symbol-code))))
+
+(defun calculate-human-distance (body)
+  (declare (type cl-human-shapes::human-body body))
+  (let* ((body-parts (body-parts body))
+         (body-part-distances (mapcar (lambda (part)
+                                        (cl-transforms:x (centroid (shape part)))) body-parts)))
+    (reduce (lambda (a b) (if (< a b) a b)) body-part-distances :initial-value 100)))
