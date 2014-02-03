@@ -28,20 +28,33 @@
 
 (in-package :cram-saphari-review-year2)
 
-(defun init-saphari-demo ()
-  (init-arm)
-  (init-tf)
-  (init-ptu)
-  (init-human-perception)
-  (init-wsg50)
-  (init-tool-perception))
+(defvar *tool-perception* nil
+  "ROS client triggering tool perception")
+(defvar *tool-perception-service* "/detect_equipment"
+  "ROS service name under which the tool detector is running.")
 
-(defun cleanup-saphari-demo ()
-  (cleanup-arm)
-  (cleanup-tf)
-  (cleanup-ptu)
-  (cleanup-human-perception)
-  (cleanup-wsg50))
+(defclass tool-percept ()
+  ((id :initarg :id :reader id :type number)
+   (pose-stamped :initarg :pose-stamped :reader pose-stamped 
+                 :type cl-tf:pose-stamped))
+  (:documentation "Internal representation of tool percept."))
 
-(roslisp-utilities:register-ros-init-function init-saphari-demo)
-(roslisp-utilities:register-ros-cleanup-function cleanup-saphari-demo)
+(defun init-tool-perception ()
+  "Inits connection to tool perception."
+  (unless *tool-perception*
+    (setf *tool-perception* 
+          (roslisp:make-service-client
+           *tool-perception-service*
+           "saphari_msgs/PerceiveEquipment"))))
+
+(defun trigger-tool-perception ()
+  (when *tool-perception*
+    (with-fields (result) 
+        (roslisp:call-service *tool-perception*)
+      (mapcar (lambda (tool)
+                (with-fields (id pose) tool
+                    (make-instance 
+                     'tool-percept
+                     :pose-stamped (cl-tf:msg->pose-stamped pose)
+                     :id id))) result))))
+    
