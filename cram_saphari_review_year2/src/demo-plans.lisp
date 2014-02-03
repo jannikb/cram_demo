@@ -68,8 +68,8 @@
     (pursue
       (cpl:wait-for (cpl:not (cpl:eql *collision-fluent* :NO-CONTACT)))
       (loop do
-        (move-arm-down 0.05 safety)))
-    (move-arm-down -0.01 safety)))
+        (move-gripper-closer 0.15 safety)))
+    (move-gripper-closer -0.01 safety)))
 
 (cpl:def-cram-function move-up ()
   (let ((safety (make-safety-settings

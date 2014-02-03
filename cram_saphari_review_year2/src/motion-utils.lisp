@@ -28,6 +28,23 @@
 
 (in-package :cram-saphari-review-year2)
 
+(defun move-gripper-closer (offset &optional (safety cram-beasty::*default-safety-settings*))
+  (declare (type number offset))
+  (let ((goal (make-instance
+               'cartesian-impedance-control-parameters
+               :goal-pose (query-tf-for-offset-pose offset))))
+    (command-beasty *arm* goal safety)))
+
+(defun query-tf-for-offset-pose (offset)
+  (cl-tf:transform-pose
+   *tf*
+   :pose (cl-tf:make-pose-stamped
+          "left_gripper"
+          0
+          (cl-transforms:make-3d-vector 0 0 offset)
+          (cl-transforms:make-identity-rotation))
+   :target-frame "calib_left_arm_base_link"))
+
 (defun move-arm-down (offset safety)
   (declare (type number offset))
   (let ((goal (make-joint-impedance-goal

@@ -41,8 +41,14 @@
   "Weight of the tool mounted to the LWR in kg.")
 (defparameter *tool-com* (cl-transforms:make-3d-vector 0.0 0.0 0.17)
   "Center of mass of tool mounted on the arm.")
+(defparameter *tool-ee-offset* (cl-transforms:make-transform
+                               (cl-transforms:make-3d-vector 0.0 0.0 0.266)
+                               (cl-transforms:make-quaternion
+                                0 0 -0.38268 0.92388)))
+  "Transform from TCP frame to EE frame.")
 (defparameter *arm-tool*
-  (make-instance 'beasty-tool :mass *tool-weight* :com *tool-com*)
+  (make-instance 'beasty-tool :mass *tool-weight* :com *tool-com* 
+                              :ee-transform *tool-ee-offset*)
   "Modelling of tool mounted on LWR.")
 (defparameter *gravity-vector* #(-7.358 4.248 4.905 0 0 0) ;#(0 0 9.81 0 0 0)
   "_NEGATIV_ 6D acceleration vector indicating in which direction gravity is acting on the
@@ -78,7 +84,7 @@
 (defun init-arm ()
   "Inits connection to beasty controller of LWR arm."
   (unless *arm* 
-    (setf *arm* (make-beasty-interface *beasty-action-name* *arm-config*)))
+    (setf *arm* (make-beasty-interface *beasty-action-name* *arm-config* nil)))
   (when *arm*
     (setf *collision-fluent* (fl-funcall #'get-strongest-collision (state *arm*))))
   (unless *ik-proxy*
