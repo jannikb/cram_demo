@@ -15,9 +15,11 @@ def makeBodyPart(id, label, centroid, radius):
 def makeHuman():
     h = Human()
     h.header.stamp = rospy.Time.now()
-    h.header.frame_id = "base_link"
-    h.bodyParts.append(makeBodyPart(0, 15, Point32(0.1, 0.1, 0.1), 0.1))
-    h.bodyParts.append(makeBodyPart(1, 16, Point32(0.6, -0.2, 1.0), 0.15))
+    h.header.frame_id = "triangle_front_center"
+    h.bodyParts.append(makeBodyPart(0, 10, Point32(2.1, 0.1, 0.05), 0.1))
+    h.bodyParts.append(makeBodyPart(0, 11, Point32(2.2, 0.1, 0.15), 0.1))
+    h.bodyParts.append(makeBodyPart(0, 12, Point32(2.3, 0.1, 0.5111), 0.1))
+    h.bodyParts.append(makeBodyPart(0, 13, Point32(2.4, 0.1, 0.5112), 0.1))
 
     return h
 
