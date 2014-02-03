@@ -48,13 +48,20 @@
            "saphari_msgs/PerceiveEquipment"))))
 
 (defun trigger-tool-perception ()
-  (when *tool-perception*
-    (with-fields (result) 
-        (roslisp:call-service *tool-perception*)
-      (mapcar (lambda (tool)
-                (with-fields (id pose) tool
-                    (make-instance 
-                     'tool-percept
-                     :pose-stamped (cl-tf:msg->pose-stamped pose)
-                     :id id))) result))))
+  (let ((tools (when *tool-perception*
+                 (with-fields (result) 
+                     (roslisp:call-service *tool-perception*)
+                   (mapcar (lambda (tool)
+                             (with-fields (id pose) tool
+                               (make-instance 
+                                'tool-percept
+                                :pose-stamped (cl-tf:msg->pose-stamped pose)
+                                :id id))) (coerce result 'list))))))
+    (separate-bowl-from-tools tools)))
+
+(defun separate-bowl-from-tools (tools)
+  (declare (type list tools))
+  (let* ((bowl (find 0 tools :key #'id))
+         (other-tools (remove bowl tools)))
+    (values bowl other-tools)))
     

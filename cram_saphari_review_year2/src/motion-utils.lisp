@@ -28,6 +28,30 @@
 
 (in-package :cram-saphari-review-year2)
 
+(defparameter *pre-grasp-rotation*
+  (cl-transforms:make-quaternion -0.84672 0.19409 -0.47681 -0.13435))
+
+(defun move-above (percept offset)
+  (declare (type tool-percept percept))
+  (with-slots (cl-tf::stamp) (pose-stamped percept)
+    (setf cl-tf::stamp 0))
+  (let ((percept-pose-in-base (cl-tf:transform-pose *tf* 
+                                                    :pose (pose-stamped percept)
+                                                    :target-frame "base_link")))
+    (with-slots  (cl-tf::stamp cl-tf::origin) percept-pose-in-base  
+      (setf cl-tf::stamp 0)
+      (with-slots (cl-transforms::z) cl-tf::origin
+          (incf cl-transforms::z offset)))
+    (let ((percept-pose-in-arm (cl-tf:transform-pose 
+                                *tf* 
+                                :pose percept-pose-in-base
+                                :target-frame "calib_left_arm_base_link")))
+      (with-slots (cl-tf::orientation) percept-pose-in-arm
+          (setf cl-tf::orientation *pre-grasp-rotation*))
+      (let ((goal (make-instance 'cartesian-impedance-control-parameters
+                                 :goal-pose percept-pose-in-arm)))
+          (command-beasty *arm* goal)))))
+     
 (defun move-gripper-closer (offset &optional (safety cram-beasty::*default-safety-settings*))
   (declare (type number offset))
   (let ((goal (make-instance

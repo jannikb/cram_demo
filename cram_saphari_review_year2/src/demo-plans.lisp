@@ -37,7 +37,7 @@
   "End configuration for the reflexxes demo.")
 
 (defparameter *pre-grasp-dummy-config*
-  #(-1.556 1.167 -0.843 -1.905 -0.582 0.451 -0.073)
+  #(-2.076 0.730 -0.902 -1.629 -0.822 0.460 -0.066)
   "Dummy config to test grasping motions.")
 
 (defparameter *high-joint-speed*
@@ -51,11 +51,21 @@
   (make-array 7 :initial-element 0.5))
 
 (cpl:def-top-level-cram-function grasping-demo ()
-  (init-arms)
-  (move-down-until-touch)
-  (cram-wsg50:close-gripper *wsg50* :width 16)
-  (move-up)
-  (cram-wsg50:open-gripper *wsg50*))
+  (command-beasty 
+   *arm* (make-joint-impedance-goal :joint-goal *pre-grasp-dummy-config*))
+  (multiple-value-bind (bowl tools)
+      (trigger-tool-perception)
+    (when (and bowl tools)
+      (mapcar (lambda (tool)
+                (move-above tool 0.1)
+                (move-above tool -0.022)
+                (cram-wsg50:close-gripper *wsg50* :width 15)
+                (move-above tool 0.1)
+                (move-above bowl 0.04)
+                (cram-wsg50:open-gripper *wsg50* :width 50))
+              tools)))
+  (command-beasty 
+   *arm* (make-joint-impedance-goal :joint-goal *pre-grasp-dummy-config*)))          
 
 (cpl:def-cram-function init-arms ()
   (let ((goal (make-joint-impedance-goal :joint-goal *pre-grasp-dummy-config*)))

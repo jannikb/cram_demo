@@ -44,7 +44,7 @@
 (defparameter *tool-ee-offset* (cl-transforms:make-transform
                                (cl-transforms:make-3d-vector 0.0 0.0 0.266)
                                (cl-transforms:make-quaternion
-                                0 0 -0.38268 0.92388)))
+                                0 0 0.38268 0.92388))
   "Transform from TCP frame to EE frame.")
 (defparameter *arm-tool*
   (make-instance 'beasty-tool :mass *tool-weight* :com *tool-com* 
