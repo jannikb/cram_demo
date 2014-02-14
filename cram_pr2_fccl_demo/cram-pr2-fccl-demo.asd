@@ -37,4 +37,5 @@
   :components
   ((:module "src"
     :components
-    ((:file "package")))))
+    ((:file "package")
+     (:file "knowrob-utils" :depends-on ("package"))))))
