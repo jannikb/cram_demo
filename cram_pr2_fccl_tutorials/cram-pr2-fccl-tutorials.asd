@@ -32,17 +32,8 @@
   :description "Tutorial package showing how to use the feature constraints controllers in PR2 executives."
 
   ;; all the necessary dependencies, look into src/package.lisp to see what's imported
-  :depends-on (:designators
-               :cram-language
-               :process-modules
-               :designators
-               :cram-plan-knowledge
-               :pr2-fccl-process-module
-               :cram-plan-library
-               :cram-feature-constraints
-               :cl-transforms)
+;  :depends-on ()
   :components
   ((:module "src"
     :components
-    ((:file "package")
-     (:file "pouring-plans" :depends-on ("package"))))))
+    ((:file "package")))))

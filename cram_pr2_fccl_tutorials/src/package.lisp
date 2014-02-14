@@ -32,36 +32,4 @@
 
 (desig-props:def-desig-package cram-pr2-fccl-tutorials
   (:nicknames :pr2-fccl-tutorials)
-  (:use #:common-lisp)
-  (:import-from #:cram-language
-                def-top-level-cram-function
-                def-cram-function
-                def-goal)
-  (:import-from #:cram-process-modules
-                with-process-modules-running)
-  (:import-from #:cram-designators
-                object
-                action
-                with-desig-props
-                desig-prop-value
-                equate)
-  (:import-from #:cram-plan-knowledge
-                achieve
-                pour-on-object)
-  (:import-from #:pr2-fccl-process-module
-                pr2-fccl-process-module)
-  (:import-from #:cram-plan-library
-                with-designators
-                perform)
-  (:import-from #:cram-feature-constraints
-                make-distance-constraint
-                make-height-constraint
-                make-perpendicular-constraint
-                make-pointing-at-constraint
-                make-line-feature
-                make-plane-feature)
-  (:import-from #:cl-transforms
-                make-3d-vector)
-  (:desig-properties #:type #:oven #:pancake-bottle #:to #:pour #:constraints
-                     #:obj-acted-on #:obj-acted-with #:feature #:features
-                     #:feature #:movement-plan #:movement #:constraints))
+  (:use #:common-lisp))
