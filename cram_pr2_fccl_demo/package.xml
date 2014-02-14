@@ -2,8 +2,7 @@
   <name>cram_pr2_fccl_demo</name>
   <version>0.1.0</version>
   <description>
-    Holds some sample plans and functionality for using the fccl controllers on the
-    PR2 from CRAM.
+    Demo package using FCCL controllers from CRAM.
   </description>
  
   <author email="georg.bartels@cs.uni-bremen.de">Georg Bartels</author>
@@ -14,6 +13,10 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <build_depend>sbcl</build_depend>
+  <build_depend>json_prolog</build_depend>
+  <build_depend>cl_feature_constraints</build_depend>
 
   <run_depend>sbcl</run_depend>
+  <run_depend>json_prolog</run_depend>
+  <run_depend>cl_feature_constraints</run_depend>
 </package>

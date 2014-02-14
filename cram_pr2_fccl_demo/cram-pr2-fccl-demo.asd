@@ -29,10 +29,10 @@
 (defsystem cram-pr2-fccl-demo
   :author "Georg Bartels <georg.bartels@cs.uni-bremen.de>"
   :license "BSD"
-  :description "Demo package showing how to use the feature constraints controllers in PR2 executives."
+  :description "Demo package using FCCL controllers from CRAM."
 
-  ;; all the necessary dependencies, look into src/package.lisp to see what's imported
-;  :depends-on ()
+  :depends-on (cram-json-prolog
+               cl-feature-constraints)
   :components
   ((:module "src"
     :components
