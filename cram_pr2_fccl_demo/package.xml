@@ -1,5 +1,5 @@
 <package>
-  <name>cram_pr2_fccl_tutorials</name>
+  <name>cram_pr2_fccl_demo</name>
   <version>0.1.0</version>
   <description>
     Holds some sample plans and functionality for using the fccl controllers on the

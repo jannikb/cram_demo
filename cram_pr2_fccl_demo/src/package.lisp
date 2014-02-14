@@ -26,14 +26,10 @@
 ;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;; POSSIBILITY OF SUCH DAMAGE.
 
-(defsystem cram-pr2-fccl-tutorials
-  :author "Georg Bartels <georg.bartels@cs.uni-bremen.de>"
-  :license "BSD"
-  :description "Tutorial package showing how to use the feature constraints controllers in PR2 executives."
+(in-package :cl-user)
 
-  ;; all the necessary dependencies, look into src/package.lisp to see what's imported
-;  :depends-on ()
-  :components
-  ((:module "src"
-    :components
-    ((:file "package")))))
+;;; PACKAGE DEFINITION WITH METHOD EXPORTS AND USED DESIGNATOR PROPERTIES.
+
+(defpackage cram-pr2-fccl-demo
+  (:nicknames :pr2-fccl-demo)
+  (:use #:common-lisp))
