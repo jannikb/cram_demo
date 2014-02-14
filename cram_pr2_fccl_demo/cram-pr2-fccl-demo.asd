@@ -32,6 +32,7 @@
   :description "Demo package using FCCL controllers from CRAM."
 
   :depends-on (cram-json-prolog
+               cram-utilities
                cl-feature-constraints)
   :components
   ((:module "src"
