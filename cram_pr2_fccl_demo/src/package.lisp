@@ -28,8 +28,6 @@
 
 (in-package :cl-user)
 
-;;; PACKAGE DEFINITION WITH METHOD EXPORTS AND USED DESIGNATOR PROPERTIES.
-
 (defpackage cram-pr2-fccl-demo
   (:nicknames :pr2-fccl-demo)
   (:use #:common-lisp))

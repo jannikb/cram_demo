@@ -31,11 +31,15 @@
   :license "BSD"
   :description "Demo package using FCCL controllers from CRAM."
 
-  :depends-on (cram-json-prolog
+  :depends-on (roslisp
+               cram-json-prolog
                cram-utilities
-               cl-feature-constraints)
+               cl-feature-constraints
+               cram-fccl
+               pr2_mechanism_msgs-srv)
   :components
   ((:module "src"
     :components
     ((:file "package")
-     (:file "knowrob-utils" :depends-on ("package"))))))
+     (:file "knowrob-utils" :depends-on ("package"))
+     (:file "controller-manager" :depends-on ("package"))))))
