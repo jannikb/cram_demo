@@ -48,3 +48,11 @@
              :format-control "Switching controllers failed. Start: ~a, stop: ~a."
              :format-arguments (list start stop)))
     t))
+
+(defun ensure-vel-controllers ()
+  (switch-controller 
+   (list "l_arm_vel" "r_arm_vel") (list "l_arm_controller" "r_arm_controller")))
+
+(defun ensure-pos-controllers ()
+  (switch-controller 
+   (list "l_arm_controller" "r_arm_controller") (list "l_arm_vel" "r_arm_vel")))
