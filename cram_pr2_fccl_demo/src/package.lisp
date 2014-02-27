@@ -30,4 +30,5 @@
 
 (defpackage cram-pr2-fccl-demo
   (:nicknames :pr2-fccl-demo)
-  (:use #:common-lisp))
+  (:use #:cl-feature-constraints
+        #:cpl))
