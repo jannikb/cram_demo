@@ -1,4 +1,4 @@
-;;; Copyright (c) 2013, Georg Bartels <georg.bartels@cs.uni-bremen.de>
+;;; Copyright (c) 2014, Georg Bartels <georg.bartels@cs.uni-bremen.de>
 ;;; All rights reserved.
 ;;;
 ;;; Redistribution and use in source and binary forms, with or without
@@ -26,23 +26,22 @@
 ;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;; POSSIBILITY OF SUCH DAMAGE.
 
-(defsystem cram-pr2-fccl-demo
-  :author "Georg Bartels <georg.bartels@cs.uni-bremen.de>"
-  :license "BSD"
-  :description "Demo package using FCCL controllers from CRAM."
+(in-package :pr2-fccl-demo)
 
-  :depends-on (roslisp
-               cram-language
-               cram-json-prolog
-               cram-utilities
-               cl-feature-constraints
-               cram-fccl
-               pr2_mechanism_msgs-srv)
-  :components
-  ((:module "src"
-    :components
-    ((:file "package")
-     (:file "knowrob-utils" :depends-on ("package"))
-     (:file "controller-manager" :depends-on ("package"))
-     (:file "ros-setup" :depends-on ("package"))
-     (:file "samples" :depends-on ("package"))))))
+(defparameter *l-arm-base-link* "torso_lift_link")
+(defparameter *l-arm-tip-link* "l_gripper_tool_frame")
+(defparameter *l-arm-kinematic-chain* 
+  (cram-fccl:make-kinematic-chain *l-arm-base-link* *l-arm-tip-link*))
+
+(defparameter *l-arm-fccl-controller-action-name* "/l_arm_fccl_controller/command")
+(defparameter *l-arm-fccl-controller* nil)
+
+(defun ensure-left-arm-controller ()
+  (unless *l-arm-fccl-controller*
+    (setf *l-arm-fccl-controller*
+          (cram-fccl:make-fccl-action-client 
+           *l-arm-fccl-controller-action-name* *l-arm-kinematic-chain*))))
+
+(defun get-left-arm-controller ()
+  (ensure-left-arm-controller)
+  *l-arm-fccl-controller*)
