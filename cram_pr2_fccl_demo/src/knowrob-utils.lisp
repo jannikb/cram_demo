@@ -40,8 +40,8 @@
 (defun query-motion-description (motion-type-id tool-type-id object-type-id)
   "Queries knowrob for the motion description with ID `motion-type-id', instantiated with
  tool-type `tool-type-id' and world-object-type `object-type-id', and returns the result as
- a list of list of 'feature-constraint'. May signal an errror of any of the sub-types of
- 'knowrob-query-error' in case of failure."
+ a list of instances of type 'motion-phases'. May signal an errror of any of the sub-types
+ of 'knowrob-query-error' in case of failure."
   (declare (type string motion-type-id tool-type-id object-type-id))
   (let* ((query (concatenate 
                  'string 
@@ -66,18 +66,21 @@
 
 (defun query-motion-phase (phase-id tool-type-id object-type-id)
   "Queries Knowrob for the content of the motion-phase with `phase-id', instantiated with
- tool-class `tool-type-id', and world-object-class `object-type-id', and returns a list
- instances of 'feature-constraints' as result. Signals an error of any of the sub-types
- of 'knowrob-query-error' in case of failure."
+ tool-class `tool-type-id', and world-object-class `object-type-id', and returns an instance
+ of type 'motion-phase' as a result. Signals an error of any of the sub-types of
+ 'knowrob-query-error' in case of failure."
   (declare (type string phase-id tool-type-id object-type-id))
   (let* ((query (concatenate 'string "motion_constraint(" phase-id ", Constraint)"))
          (bindings (cut:force-ll (json-prolog:prolog-simple query))))
     (if bindings
-        (mapcar (lambda (binding)
-                  (cut:with-vars-bound (|?Constraint|) binding
-                    (query-constraint (knowrob-symbol->string |?Constraint| nil)
-                                      tool-type-id object-type-id)))
-                bindings)
+        (cl-feature-constraints:make-motion-phase
+         :id phase-id
+         :constraints 
+         (mapcar (lambda (binding)
+                   (cut:with-vars-bound (|?Constraint|) binding
+                     (query-constraint (knowrob-symbol->string |?Constraint| nil)
+                                       tool-type-id object-type-id)))
+                 bindings))
         (error 'knowrob-phase-query-error
                   :text "Knowrob query for motion-phase came up empty."
                   :args (list phase-id tool-type-id object-type-id)))))
