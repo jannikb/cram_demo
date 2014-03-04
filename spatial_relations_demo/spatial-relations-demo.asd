@@ -26,20 +26,26 @@
 ;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;; POSSIBILITY OF SUCH DAMAGE.
 
-(in-package :cl-user)
-
-(desig-props:def-desig-package spatial-relations-costmap
-    (:use #:desig
-          #:cram-roslisp-common
-          #:location-costmap
-          #:common-lisp
-          #:cram-reasoning
-          #:semantic-map-costmap
-          #:btr
-          #:cram-utilities
-          #:cram-environment-representation)
-  (:shadowing-import-from #:btr object pose object-pose width height)
-  (:desig-properties #:left-of #:right-of #:in-front-of #:behind
-                     #:for #:near #:far-from
-                     #:on #:name #:context #:object-count))
-
+(defsystem spatial-relations-demo
+  :author "eris"
+  :license "BSD"
+  :depends-on (spatial-relations-costmap
+               designators
+               cram-roslisp-common
+               location-costmap
+               cram-reasoning
+               roslisp
+               semantic-map-costmap
+               bullet-reasoning
+               cram-pr2-knowledge
+               cram-environment-representation
+               projection-process-modules
+               occupancy-grid-costmap
+               cram-plan-knowledge
+               bullet-reasoning-designators
+               pr2-manipulation-knowledge
+               object-location-designators)
+  :components
+  ((:module "src"
+    :components
+    ((:file "build-test-world" )))))

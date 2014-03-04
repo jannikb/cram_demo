@@ -1,14 +1,15 @@
 <package>
-  <description brief="spatial_relations_costmap">
+  <description brief="spatial_relations_demo">
 
-     spatial_relations_costmap
+     spatial_relations_demo
 
   </description>
   <author>Gayane Kazhoyan</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
-  <url>http://ros.org/wiki/spatial_relations_costmap</url>
+  <url>http://ros.org/wiki/spatial_relations_demo</url>
   <rosdep name="sbcl"/>
+  <depend package="spatial_relations_costmap"/>
   <depend package="cram_roslisp_common"/>
   <depend package="cram_designators"/>
   <depend package="location_costmap"/>
