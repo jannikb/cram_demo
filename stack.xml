@@ -1,0 +1,7 @@
+<stack>
+  <description brief="cram_demo">cram_demo</description>
+  <author>multiple</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/cram_demo</url>
+</stack>
