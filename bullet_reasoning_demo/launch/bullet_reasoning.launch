@@ -21,7 +21,7 @@
   <include file="$(find bullet_reasoning_demo)/launch/moveit.launch" />
 <!-- </group> -->
 
-<node name="triangulate_point_cloud" pkg="triangulate_point_cloud"
-      type="triangulate_pcl" />
+<!-- <node name="triangulate_point_cloud" pkg="triangulate_point_cloud" -->
+<!--       type="triangulate_pcl" /> -->
 
 </launch>
