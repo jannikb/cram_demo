@@ -19,7 +19,8 @@
   <build_depend>cram_language</build_depend>
   <build_depend>cl_feature_constraints</build_depend>
   <build_depend>cram_fccl</build_depend>
-  <build_depend>pr2_mechanism_msgs</build_depend>
+  <build_depend>cram_pr2_controllers</build_depend>
+  <build_depend>cl_robot_models</build_depend>
 
   <run_depend>sbcl</run_depend>
   <run_depend>roslisp</run_depend>
@@ -28,5 +29,6 @@
   <run_depend>cram_language</run_depend>
   <run_depend>cl_feature_constraints</run_depend>
   <run_depend>cram_fccl</run_depend>
-  <run_depend>pr2_mechanism_msgs</run_depend>
+  <run_depend>cram_pr2_controllers</run_depend>
+  <run_depend>cl_robot_models</run_depend>
 </package>

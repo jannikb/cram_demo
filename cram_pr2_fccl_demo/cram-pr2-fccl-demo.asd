@@ -36,7 +36,9 @@
                cram-json-prolog
                cram-utilities
                cl-feature-constraints
-               cram-fccl)
+               cram-fccl
+               cram-pr2-controllers
+               cl-robot-models)
   :components
   ((:module "src"
     :components
