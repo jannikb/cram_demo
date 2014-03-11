@@ -36,6 +36,18 @@
 (defparameter *l-arm-fccl-controller-action-name* "/l_arm_fccl_controller/command")
 (defparameter *l-arm-fccl-controller* nil)
 
+(defparameter *l-arm-joint-names*
+  #("l_upper_arm_roll_joint"
+    "l_shoulder_pan_joint"
+    "l_shoulder_lift_joint"
+    "l_forearm_roll_joint"
+    "l_elbow_flex_joint"
+    "l_wrist_flex_joint"
+    "l_wrist_roll_joint"))
+
+(defparameter *l-arm-pouring-start-config*
+  #(0 0 0 0 0 0 0))
+
 (defun ensure-left-arm-controller ()
   (unless *l-arm-fccl-controller*
     (setf *l-arm-fccl-controller*
