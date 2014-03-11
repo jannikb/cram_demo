@@ -28,6 +28,21 @@
 
 (in-package :pr2-fccl-tutorials)
 
+(let* ((controller (get-left-arm-controller))
+       (motions (query-motion-description 
+                 "motion:'PouringSomething'"
+                 "knowrob:'BottleCap'"
+                 "knowrob:'PancakeMaker'"))
+       (motion (first motions))
+       (constraints-fulfilled-fluent (cram-fccl:get-constraints-fulfilled-fluent controller)))
+  (ensure-vel-controllers)
+  (top-level
+    (pursue
+      (cram-fccl:command-motion controller motion)
+      (whenever ((pulsed constraints-fulfilled-fluent))
+        (when (value constraints-fulfilled-fluent)
+          (cram-fccl:cancel-motion controller))))))
+
 ;; SOME NAIVE POURING PLANS.
 ;; TO TEST THEM, MAKE SURE TO HAVE STARTED THE LAUNCH-FILE:
 ;;  <launch-file>
