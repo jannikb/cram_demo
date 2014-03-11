@@ -1,4 +1,4 @@
-;;; Copyright (c) 2013, Georg Bartels <georg.bartels@cs.uni-bremen.de>
+;;; Copyright (c) 2014, Georg Bartels <georg.bartels@cs.uni-bremen.de>
 ;;; All rights reserved.
 ;;;
 ;;; Redistribution and use in source and binary forms, with or without
@@ -26,11 +26,34 @@
 ;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;; POSSIBILITY OF SUCH DAMAGE.
 
-(in-package :cl-user)
+(in-package :pr2-fccl-demo)
 
-(desig-props:def-desig-package cram-pr2-fccl-demo
-  (:nicknames :pr2-fccl-demo)
-  (:use #:common-lisp #:cl-feature-constraints)
-  (:import-from #:cram-designators reference constraints-desig? action-desig desig-prop)
-  (:import-from #:cram-reasoning def-fact-group <- lisp-fun)
-  (:desig-properties type constraints to flip to pour))
+;;;
+;;; AUX KNOWROB CALLS
+;;;
+
+(defun knowrob-pouring-description ()
+  (query-motion-description 
+   "motion:'PouringSomethingFromBottle'"
+   "knowrob:'BottleCap'"
+   "knowrob:'PancakeMaker'"))
+
+(defun knowrob-flipping-description ()
+  ;; TODO(Georg): implement me!
+  nil)
+
+;;;
+;;; AUXILIARY FACTS FOR OUR DESIGNATORS
+;;;
+
+(def-fact-group pr2-fccl-demo-designators (action-desig)
+  
+  (<- (action-desig ?desig (?motion))
+    (constraints-desig? ?desig)
+    (desig-prop ?desig (to pour))
+    (lisp-fun knowrob-pouring-description ?motion))
+
+  (<- (action-desig ?desig (?motion))
+    (constraints-desig? ?desig)
+    (desig-prop ?desig (to flip))
+    (lisp-fun knowrob-flipping-description ?motion)))

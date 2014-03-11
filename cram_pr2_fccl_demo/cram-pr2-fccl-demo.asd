@@ -35,9 +35,12 @@
                cram-language
                cram-json-prolog
                cram-utilities
-               cl-feature-constraints
+               designators
+               cram-language-designator-support
+               cram-reasoning
                cram-fccl
                cram-pr2-controllers
+               cl-feature-constraints
                cl-robot-models)
   :components
   ((:module "src"
@@ -45,4 +48,5 @@
     ((:file "package")
      (:file "knowrob-utils" :depends-on ("package"))
      (:file "ros-setup" :depends-on ("package"))
+     (:file "designators" :depends-on ("package" "knowrob-utils"))
      (:file "samples" :depends-on ("package"))))))
