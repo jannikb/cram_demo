@@ -36,13 +36,11 @@
                cram-json-prolog
                cram-utilities
                cl-feature-constraints
-               cram-fccl
-               pr2_mechanism_msgs-srv)
+               cram-fccl)
   :components
   ((:module "src"
     :components
     ((:file "package")
      (:file "knowrob-utils" :depends-on ("package"))
-     (:file "controller-manager" :depends-on ("package"))
      (:file "ros-setup" :depends-on ("package"))
      (:file "samples" :depends-on ("package"))))))
