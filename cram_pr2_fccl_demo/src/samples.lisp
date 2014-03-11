@@ -63,7 +63,7 @@
 (defparameter *bottle-top-over-bottom*
   (make-feature-relation
    :id "bottle top over bottle bottom relation"
-   :reference "torso_lift_link"
+   :frame-id "torso_lift_link"
    :function-type 'above
    :tool-feature *bottle-top*
    :object-feature *bottle-bottom*))
@@ -71,7 +71,7 @@
 (defparameter *bottle-top-right-bottom*
   (make-feature-relation
    :id "bottle top right bottle bottom relation"
-   :reference "torso_lift_link"
+   :frame-id "torso_lift_link"
    :function-type 'right
    :tool-feature *bottle-top*
    :object-feature *bottle-bottom*))
@@ -79,7 +79,7 @@
 (defparameter *bottle-bottom-over-oven*
   (make-feature-relation
    :id "bottle bottom over oven"
-   :reference "torso_lift_link"
+   :frame-id "torso_lift_link"
    :function-type 'above
    :tool-feature *bottle-bottom*
    :object-feature *oven-center*))
@@ -87,7 +87,7 @@
 (defparameter *bottle-left-of-oven*
   (make-feature-relation
    :id "bottle left of oven"
-   :reference "torso_lift_link"
+   :frame-id "torso_lift_link"
    :function-type 'left
    :tool-feature *bottle-top*
    :object-feature *oven-center*))
@@ -95,7 +95,7 @@
 (defparameter *bottle-behind-of-oven*
   (make-feature-relation
    :id "bottle behind of oven"
-   :reference "torso_lift_link"
+   :frame-id "torso_lift_link"
    :function-type 'behind
    :tool-feature *bottle-top*
    :object-feature *oven-center*))
@@ -119,7 +119,7 @@
 (defparameter *hand-horizontal-relation*
   (make-feature-relation
    :id "hand horizontal relation"
-   :reference "torso_lift_link"
+   :frame-id "torso_lift_link"
    :function-type 'perpendicular
    :tool-feature *left-gripper-plane*
    :object-feature *waist-plane*))

@@ -103,7 +103,7 @@
                   (cl-feature-constraints:make-feature-relation
                    :id (concatenate 'string "relation_" constraint-id)
                    :function-type (knowrob-constraint-type->symbol |?Type|)
-                   :reference (knowrob-symbol->string |?Reference|)
+                   :frame-id (knowrob-symbol->string |?Reference|)
                    :tool-feature (query-feature (knowrob-symbol->string |?ToolFeature| nil))
                    :object-feature (query-feature (knowrob-symbol->string |?WorldFeature| nil)))))
             (cl-feature-constraints:make-feature-constraint
