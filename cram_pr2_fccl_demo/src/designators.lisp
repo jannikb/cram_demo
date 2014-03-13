@@ -39,8 +39,26 @@
    "knowrob:'PancakeMaker'"))
 
 (defun knowrob-flipping-description ()
-  ;; TODO(Georg): implement me!
+  (warn "Lookup of pancake flipping not implemented, yet.")
   nil)
+
+;;;
+;;; ASSEMBLING CONTROLLER CALLS
+;;;
+
+(defun constraint-controller-start ()
+  (lambda (motion-phase)
+    (cram-fccl:command-motion (get-left-arm-fccl-controller) motion-phase)))
+
+(defun constraint-controller-stop ()
+  (lambda () (cram-fccl:cancel-motion (get-left-arm-fccl-controller))))
+
+;;;
+;;; ASSEMBLING FLUENTS
+;;;
+
+(defun constraint-controller-finished-fluent ()
+  (cram-fccl:get-constraints-fulfilled-fluent (get-left-arm-fccl-controller)))
 
 ;;;
 ;;; AUXILIARY FACTS FOR OUR DESIGNATORS
@@ -48,12 +66,18 @@
 
 (def-fact-group pr2-fccl-demo-designators (action-desig)
   
-  (<- (action-desig ?desig (?motion))
+  (<- (action-desig ?desig (?motion ?controller-start ?controller-stop ?controller-fluent))
     (constraints-desig? ?desig)
     (desig-prop ?desig (to pour))
-    (lisp-fun knowrob-pouring-description ?motion))
+    (lisp-fun knowrob-pouring-description ?motion)
+    (lisp-fun constraint-controller-start ?controller-start)
+    (lisp-fun constraint-controller-stop ?controller-stop)
+    (lisp-fun constraint-controller-finished-fluent ?controller-fluent))
 
-  (<- (action-desig ?desig (?motion))
+  (<- (action-desig ?desig (?motion ?controller-start ?controller-stop ?controller-fluent))
     (constraints-desig? ?desig)
     (desig-prop ?desig (to flip))
-    (lisp-fun knowrob-flipping-description ?motion)))
+    (lisp-fun knowrob-flipping-description ?motion)
+    (lisp-fun constraint-controller-start ?controller-start)
+    (lisp-fun constraint-controller-stop ?controller-stop)
+    (lisp-fun constraint-controller-finished-fluent ?controller-fluent)))

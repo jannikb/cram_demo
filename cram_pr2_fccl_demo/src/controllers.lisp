@@ -28,5 +28,38 @@
 
 (in-package :pr2-fccl-demo)
 
-(defparameter *l-arm-pouring-start-config*
-  #(0 0 0 0 0 0 0))
+;;;
+;;; FCCL CONTROLLER FOR LEFT ARM
+;;;
+
+(defparameter *l-arm-fccl-controller* nil)
+
+(defun ensure-left-arm-fccl-controller ()
+  (unless *l-arm-fccl-controller*
+    (setf *l-arm-fccl-controller*
+          (cram-fccl:make-fccl-action-client 
+           *l-arm-fccl-controller-action-name* *l-arm-kinematic-chain*))))
+
+(defun get-left-arm-fccl-controller ()
+  (ensure-left-arm-fccl-controller)
+  *l-arm-fccl-controller*)
+
+;;;
+;;; HANDLE TO PR2 CONTROLLER MANAGER
+;;;
+
+(defparameter *pr2-controller-manager* nil)
+
+(defun ensure-pr2-controller-manager ()
+  (unless *pr2-controller-manager*
+    (setf *pr2-controller-manager* (pr2-controllers:make-pr2-controller-manager-handle))))
+
+(defun get-pr2-controller-manager ()
+  (ensure-pr2-controller-manager)
+  *pr2-controller-manager*)
+
+(defun ensure-vel-controllers ()
+  (pr2-controllers:ensure-vel-controllers (get-pr2-controller-manager)))
+
+(defun ensure-pos-controllers ()
+  (pr2-controllers:ensure-pos-controllers (get-pr2-controller-manager)))

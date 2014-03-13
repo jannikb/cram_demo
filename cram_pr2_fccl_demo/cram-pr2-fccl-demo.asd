@@ -32,6 +32,7 @@
   :description "Demo package using FCCL controllers from CRAM."
 
   :depends-on (roslisp
+               roslisp-utilities
                cram-language
                cram-json-prolog
                cram-utilities
@@ -47,6 +48,7 @@
     :components
     ((:file "package")
      (:file "knowrob-utils" :depends-on ("package"))
-     (:file "ros-setup" :depends-on ("package"))
-     (:file "designators" :depends-on ("package" "knowrob-utils"))
-     (:file "samples" :depends-on ("package"))))))
+     (:file "parameters" :depends-on ("package"))
+     (:file "controllers" :depends-on ("package" "parameters"))
+     (:file "designators" :depends-on ("package" "knowrob-utils" "controllers"))
+     (:file "pouring-plans" :depends-on ("package" "designators"))))))
