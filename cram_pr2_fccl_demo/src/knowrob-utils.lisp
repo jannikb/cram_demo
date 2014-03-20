@@ -129,7 +129,13 @@
          'cl-feature-constraints:above)
         ((eql constraint-type
               (intern "'http://ias.cs.tum.edu/kb/motion-constraints.owl#PointingAtConstraint'"))
-         'cl-feature-constraints:pointing-at)
+         'cl-feature-constraints:pointing)
+        ((eql constraint-type
+              (intern "'http://ias.cs.tum.edu/kb/motion-constraints.owl#RightOfConstraint'"))
+         'cl-feature-constraints:right)
+        ((eql constraint-type
+              (intern "'http://ias.cs.tum.edu/kb/motion-constraints.owl#InFrontOfConstraint'"))
+         'cl-feature-constraints:infront)
         (t (error 'knowrob-translation-error
                    :text "Could not translate Knowrob symbol for feature constraint."
                    :args (list constraint-type)))))

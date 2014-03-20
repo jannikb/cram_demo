@@ -28,6 +28,80 @@
 
 (in-package :cram-pr2-fccl-demo)
 
+;;; POURING
+
+(defparameter *bottle-top*
+  (make-geometric-feature
+   :id "bottle top plane"
+   :frame-id "pancake_bottle"
+   :feature-type 'plane
+   :origin (cl-transforms:make-3d-vector 0 0 0.0825)
+   :orientation (cl-transforms:make-3d-vector 0 0 1)))
+
+(defparameter *bottle-bottom*
+  (make-geometric-feature
+   :id "bottle bottom plane"
+   :frame-id "pancake_bottle"
+   :feature-type 'plane
+   :origin (cl-transforms:make-3d-vector 0 0 -0.11)
+   :orientation (cl-transforms:make-3d-vector 0 0 -1)))
+
+(defparameter *bottle-grasping-point*
+  (make-geometric-feature
+   :id "bottle grasping point"
+   :frame-id "pancake_bottle"
+   :feature-type 'point))
+
+(defparameter *oven-center*
+  (make-geometric-feature
+   :id "oven center plane"
+   :frame-id "pancake_maker"
+   :feature-type 'plane
+   :origin (cl-transforms:make-3d-vector 0 0 0)
+   :orientation (cl-transforms:make-3d-vector 0 0 1)))
+
+(defparameter *bottle-top-over-bottom*
+  (make-feature-relation
+   :id "bottle top over bottle bottom relation"
+   :reference "torso_lift_link"
+   :function-type 'above
+   :tool-feature *bottle-top*
+   :object-feature *bottle-bottom*))
+
+(defparameter *bottle-top-right-bottom*
+  (make-feature-relation
+   :id "bottle top right bottle bottom relation"
+   :reference "torso_lift_link"
+   :function-type 'right
+   :tool-feature *bottle-top*
+   :object-feature *bottle-bottom*))
+
+(defparameter *bottle-bottom-over-oven*
+  (make-feature-relation
+   :id "bottle bottom over oven"
+   :reference "torso_lift_link"
+   :function-type 'above
+   :tool-feature *bottle-bottom*
+   :object-feature *oven-center*))
+
+(defparameter *bottle-left-of-oven*
+  (make-feature-relation
+   :id "bottle left of oven"
+   :reference "torso_lift_link"
+   :function-type 'left
+   :tool-feature *bottle-top*
+   :object-feature *oven-center*))
+  
+(defparameter *bottle-behind-of-oven*
+  (make-feature-relation
+   :id "bottle behind of oven"
+   :reference "torso_lift_link"
+   :function-type 'behind
+   :tool-feature *bottle-top*
+   :object-feature *oven-center*))
+
+;;; HAND IN AIR
+
 (defparameter *left-gripper-plane*
   (make-geometric-feature
    :id "left gripper plane"

@@ -37,12 +37,12 @@
                cram-utilities
                cl-feature-constraints
                cram-fccl
-               pr2_mechanism_msgs-srv)
+               cram-pr2-controllers
+               cl-robot-models)
   :components
   ((:module "src"
     :components
     ((:file "package")
      (:file "knowrob-utils" :depends-on ("package"))
-     (:file "controller-manager" :depends-on ("package"))
      (:file "ros-setup" :depends-on ("package"))
      (:file "samples" :depends-on ("package"))))))
