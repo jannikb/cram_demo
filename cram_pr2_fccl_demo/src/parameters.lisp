@@ -40,13 +40,65 @@
   (cram-fccl:make-kinematic-chain *l-arm-base-link* *l-arm-tip-link*))
 
 (defparameter *l-arm-joint-names*
-  #("l_upper_arm_roll_joint"
+  '("l_upper_arm_roll_joint"
     "l_shoulder_pan_joint"
     "l_shoulder_lift_joint"
     "l_forearm_roll_joint"
     "l_elbow_flex_joint"
     "l_wrist_flex_joint"
     "l_wrist_roll_joint"))
+
+;;;
+;;; START CONFIGURATIONS FOR LEFT ARM
+;;;
+
+(defparameter *l-arm-pouring-start-config*
+  (cl-robot-models:make-robot-state
+   "Raphael" "PR2"
+   (list
+    (cl-robot-models:make-joint-state
+     :joint-name "l_upper_arm_roll_joint" :joint-position 1.392565491097796)
+    (cl-robot-models:make-joint-state
+     :joint-name "l_shoulder_pan_joint" :joint-position 1.0650093105988152)
+    (cl-robot-models:make-joint-state
+     :joint-name "l_shoulder_lift_joint" :joint-position 0.26376743371555295)
+    (cl-robot-models:make-joint-state
+     :joint-name "l_forearm_roll_joint" :joint-position 0.524)
+    (cl-robot-models:make-joint-state
+     :joint-name "l_elbow_flex_joint" :joint-position -1.629946646305397)
+    (cl-robot-models:make-joint-state
+     :joint-name "l_wrist_flex_joint" :joint-position -0.9668414952685922)
+    (cl-robot-models:make-joint-state
+     :joint-name "l_wrist_roll_joint" :joint-position -1.8614))))
+
+(defparameter *l-arm-flipping-start-config*
+  (cl-robot-models:make-robot-state
+   "Raphael" "PR2"
+   (list
+    (cl-robot-models:make-joint-state
+     :joint-name "l_upper_arm_roll_joint" :joint-position 1.32)
+    (cl-robot-models:make-joint-state
+     :joint-name "l_shoulder_pan_joint" :joint-position 1.08)
+    (cl-robot-models:make-joint-state
+     :joint-name "l_shoulder_lift_joint" :joint-position 0.16)
+    (cl-robot-models:make-joint-state
+     :joint-name "l_forearm_roll_joint" :joint-position 0.0)
+    (cl-robot-models:make-joint-state
+     :joint-name "l_elbow_flex_joint" :joint-position -1.14)
+    (cl-robot-models:make-joint-state
+     :joint-name "l_wrist_flex_joint" :joint-position -1.05)
+    (cl-robot-models:make-joint-state
+     :joint-name "l_wrist_roll_joint" :joint-position 1.57))))
+
+;;;
+;;; STANDARD POSITION CONTROLLERS FOR PR2 ARMS
+;;;
+
+(defparameter *l-arm-position-controller-action-name* 
+  "/l_arm_controller/joint_trajectory_action")
+
+(defparameter *r-arm-position-controller-action-name* 
+  "/r_arm_controller/joint_trajectory_action")
 
 ;;;
 ;;; FCCL CONTROLLER FOR LEFT ARM
