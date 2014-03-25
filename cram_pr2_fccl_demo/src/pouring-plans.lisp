@@ -46,8 +46,19 @@
         (cram-language:whenever ((cram-language:pulsed finished-fluent))
           (when (cram-language-implementation:value finished-fluent)
             (funcall stop-controller)))))))
-  
 
+(cpl-impl:def-cram-function flipping ()
+  (ensure-vel-controllers)
+  (let ((motions (left-arm-flipping-description))
+        (fluent (cram-fccl:get-constraints-fulfilled-fluent 
+                 (get-left-arm-fccl-controller))))
+    (loop for motion in motions do
+      (cram-language:pursue
+        (cram-fccl:command-motion (get-left-arm-fccl-controller) motion)
+        (cram-language:whenever ((cram-language:pulsed fluent))
+          (when (cram-language-implementation:value fluent)
+            (cram-fccl:cancel-motion (get-left-arm-fccl-controller))))))))
+  
 ;; SOME NAIVE POURING PLANS.
 ;; TO TEST THEM, MAKE SURE TO HAVE STARTED THE LAUNCH-FILE:
 ;;  <launch-file>
