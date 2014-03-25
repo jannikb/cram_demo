@@ -63,3 +63,19 @@
 
 (defun ensure-pos-controllers ()
   (pr2-controllers:ensure-pos-controllers (get-pr2-controller-manager)))
+
+;;;
+;;; HANDLE TO PR2 STANDARD POSITION CONTROLLERS
+;;;
+
+(defparameter *l-arm-position-controller* nil)
+
+(defun ensure-left-arm-position-controller ()
+  (unless *l-arm-position-controller*
+    (setf *l-arm-position-controller*
+          (cram-pr2-controllers:make-pr2-arm-position-controller-handle
+           *l-arm-position-controller-action-name* *l-arm-joint-names*))))
+
+(defun get-left-arm-position-controller ()
+  (ensure-left-arm-position-controller)
+  *l-arm-position-controller*)
