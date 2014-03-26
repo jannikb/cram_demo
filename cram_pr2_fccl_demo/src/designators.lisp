@@ -38,9 +38,14 @@
    "knowrob:'BottleCap'"
    "knowrob:'PancakeMaker'"))
 
-(defun knowrob-flipping-description ()
-  (warn "Lookup of pancake flipping not implemented, yet.")
-  nil)
+;;;
+;;; HAND-CODED FLIPPING DESCRIPTION
+;;;
+
+(defun flipping-description ()
+  (mapcar (lambda (left right) (cons left right)) 
+          (left-arm-flipping-description) 
+          (right-arm-flipping-description)))
 
 (defun left-arm-flipping-description ()
   ;;; FEATURES
@@ -425,9 +430,19 @@
 (defun constraint-controller-stop ()
   (lambda () (cram-fccl:cancel-motion (get-left-arm-fccl-controller))))
 
+(defun controller-start (side)
+  (lambda (motion-phase)
+    (cram-fccl:command-motion (get-fccl-controller side) motion-phase)))
+
+(defun controller-stop (side)
+    (lambda () (cram-fccl:cancel-motion (get-fccl-controller side))))
+
 ;;;
 ;;; ASSEMBLING FLUENTS
 ;;;
+
+(defun controller-fluent (side)
+  (cram-fccl:get-constraints-fulfilled-fluent (get-fccl-controller side)))
 
 (defun constraint-controller-finished-fluent ()
   (cram-fccl:get-constraints-fulfilled-fluent (get-left-arm-fccl-controller)))
@@ -446,10 +461,13 @@
     (lisp-fun constraint-controller-stop ?controller-stop)
     (lisp-fun constraint-controller-finished-fluent ?controller-fluent))
 
-  (<- (action-desig ?desig (?motion ?controller-start ?controller-stop ?controller-fluent))
+  (<- (action-desig ?desig (?motion ?l-start ?l-stop ?l-fluent ?r-start ?r-stop ?r-fluent))
     (constraints-desig? ?desig)
     (desig-prop ?desig (to flip))
-    (lisp-fun knowrob-flipping-description ?motion)
-    (lisp-fun constraint-controller-start ?controller-start)
-    (lisp-fun constraint-controller-stop ?controller-stop)
-    (lisp-fun constraint-controller-finished-fluent ?controller-fluent)))
+    (lisp-fun flipping-description ?motion)
+    (lisp-fun controller-start left-arm ?l-start)
+    (lisp-fun controller-stop left-arm ?l-stop)
+    (lisp-fun controller-fluent left-arm ?l-fluent)
+    (lisp-fun controller-start right-arm ?r-start)
+    (lisp-fun controller-stop right-arm ?r-stop)
+    (lisp-fun controller-fluent right-arm ?r-fluent)))
