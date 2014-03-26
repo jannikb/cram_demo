@@ -58,3 +58,11 @@
             (cram-language:par
               (funcall l-stop-controller)
               (funcall r-stop-controller)))))))))
+
+(cpl-impl:def-cram-function move-into-flipping-configuration ()
+  (ensure-pos-controllers)
+  (cram-language:par
+    (pr2-controllers:move-arm (get-right-arm-position-controller)
+                              *r-arm-flipping-start-config* 4.0)
+    (pr2-controllers:move-arm (get-left-arm-position-controller)
+                              *l-arm-flipping-start-config* 4.0)))
