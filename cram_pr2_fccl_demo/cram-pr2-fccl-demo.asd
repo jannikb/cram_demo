@@ -51,4 +51,4 @@
      (:file "parameters" :depends-on ("package"))
      (:file "controllers" :depends-on ("package" "parameters"))
      (:file "designators" :depends-on ("package" "knowrob-utils" "controllers"))
-     (:file "pouring-plans" :depends-on ("package" "designators"))))))
+     (:file "plans" :depends-on ("package" "designators"))))))
