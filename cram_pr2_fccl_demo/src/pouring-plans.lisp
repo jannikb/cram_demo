@@ -34,7 +34,7 @@
 
 (cpl-impl:def-cram-function flip-pancake ()
   (with-designators ((desig (action `((type constraints) (to flip)))))
-    (perform-constraint-desig desig)))
+    (reference desig)))
 
 (cpl-impl:def-cram-function perform-constraint-desig (desig)
   (destructuring-bind (motions start-controller stop-controller finished-fluent)
@@ -48,26 +48,23 @@
             (funcall stop-controller)))))))
 
 (cpl-impl:def-cram-function flipping ()
-  (ensure-vel-controllers)
-  (let* ((left-arm-motions (left-arm-flipping-description))
-         (right-arm-motions (right-arm-flipping-description))
-         (motions (mapcar (lambda (a b) (cons a b)) left-arm-motions right-arm-motions))
-         (left-fluent (cram-fccl:get-constraints-fulfilled-fluent 
-                       (get-left-arm-fccl-controller)))
-         (right-fluent (cram-fccl:get-constraints-fulfilled-fluent 
-                        (get-right-arm-fccl-controller))))
+  (with-designators ((desig (action `((type constraints) (to flip)))))
+  (destructuring-bind (motions l-start-controller l-stop-controller l-finished-fluent
+                       r-start-controller r-stop-controller r-finished-fluent)
+      (reference desig)
+    (ensure-vel-controllers)
     (loop for motion in motions do
       (cram-language:pursue
-        (cram-fccl:command-motion (get-left-arm-fccl-controller) (first motion))
-        (cram-fccl:command-motion (get-right-arm-fccl-controller) (rest motion))
+        (funcall l-start-controller (first motion))
+        (funcall r-start-controller (rest motion))
         (cram-language:whenever ((cpl-impl:fl-or 
-                                  (cram-language:pulsed right-fluent)
-                                  (cram-language:pulsed left-fluent)))
-          (when (cpl-impl:fl-and (cram-language-implementation:value right-fluent)
-                                 (cram-language-implementation:value left-fluent))
+                                  (cram-language:pulsed l-finished-fluent)
+                                  (cram-language:pulsed r-finished-fluent)))
+          (when (cpl-impl:fl-and (cram-language-implementation:value l-finished-fluent)
+                                 (cram-language-implementation:value r-finished-fluent))
             (cram-language:par
-              (cram-fccl:cancel-motion (get-left-arm-fccl-controller))
-              (cram-fccl:cancel-motion (get-right-arm-fccl-controller)))))))))
+              (funcall l-stop-controller)
+              (funcall r-stop-controller)))))))))
   
 ;; SOME NAIVE POURING PLANS.
 ;; TO TEST THEM, MAKE SURE TO HAVE STARTED THE LAUNCH-FILE:
