@@ -269,8 +269,150 @@
          spatula-above-oven-motion 
          spatula-touch-oven-motion 
          spatula-push-under-motion
+         spatula-push-under-motion
          spatula-lift-motion
          spatula-flip-motion)))))
+
+(defun right-arm-flipping-description ()
+  ;;; FEATURES
+  (let ((right-spatula-front
+          (make-geometric-feature
+           :id "right spatula front edge"
+           :frame-id "r_spatula_blade"
+           :feature-type 'LINE
+           :origin (cl-transforms:make-3d-vector 0 0.0 0.0475)
+           :orientation (cl-transforms:make-3d-vector 0 1 0)))
+          (right-spatula-blade
+           (make-geometric-feature
+            :id "right spatula blade"
+            :frame-id "r_spatula_blade"
+            :feature-type 'PLANE
+            :origin (cl-transforms:make-3d-vector 0 0 0)
+            :orientation (cl-transforms:make-3d-vector 1 0 0)))
+          (pancake-right-rim
+           (make-geometric-feature
+            :id "pancake right rim"
+            :frame-id "pancake"
+            :feature-type 'LINE
+            :origin (cl-transforms:make-3d-vector 0 -0.06 0)
+            :orientation (cl-transforms:make-3d-vector 1 0 0)))
+          (oven-center
+           (make-geometric-feature
+            :id "oven center"
+            :frame-id "oven"
+            :feature-type 'PLANE
+            :origin (cl-transforms:make-3d-vector 0 0 0.05)
+            :orientation (cl-transforms:make-3d-vector 0 0 1))))
+    ;;; RELATIONS
+    (let ((spatula-front-right-pancake
+            (make-feature-relation
+             :id "right spatula front right of pancake relation"
+             :frame-id "base_link"
+             :function-type 'RIGHT
+             :tool-feature right-spatula-front
+             :object-feature pancake-right-rim))
+          (spatula-front-above-oven
+            (make-feature-relation
+             :id "right spatula front above pancake relation"
+             :frame-id "base_link"
+             :function-type 'ABOVE
+             :tool-feature right-spatula-front
+             :object-feature pancake-right-rim))
+          (spatula-front-behind-pancake
+            (make-feature-relation
+             :id "right spatula front behind pancake relation"
+             :frame-id "base_link"
+             :function-type 'BEHIND
+             :tool-feature right-spatula-front
+             :object-feature pancake-right-rim))
+          (spatula-front-parallel-oven
+            (make-feature-relation
+             :id "right spatula front parallel to oven"
+             :frame-id "base_link"
+             :function-type 'PERPENDICULAR
+             :tool-feature right-spatula-front
+             :object-feature oven-center))
+          (spatula-oven-pitch
+            (make-feature-relation
+             :id "right spatula oven pitch"
+             :frame-id "base_link"
+             :function-type 'PERPENDICULAR
+             :tool-feature right-spatula-blade
+             :object-feature oven-center)))
+      ;;; MOTIONS
+      (let ((right-spatula-above-oven-motion
+              (make-motion-phase
+               :id "right spatula above oven motion"
+               :constraints
+               (list
+                (make-feature-constraint
+                 :id "right spatula front right of pancake constraint"
+                 :relation spatula-front-right-pancake
+                 :lower-boundary 0.02 :upper-boundary 0.05)
+                (make-feature-constraint
+                 :id "right spatula front above of oven constraint"
+                 :relation spatula-front-above-oven
+                 :lower-boundary 0.1 :upper-boundary 0.2)
+                (make-feature-constraint
+                 :id "right spatula front behind of pancake constraint"
+                 :relation spatula-front-behind-pancake
+                 :lower-boundary -0.01 :upper-boundary 0.01)
+                (make-feature-constraint
+                 :id "right spatula front parallel to oven surface"
+                 :relation spatula-front-parallel-oven
+                 :lower-boundary -0.02 :upper-boundary 0.02)
+                (make-feature-constraint
+                 :id "right spatula tilted w.r.t. oven surface"
+                 :relation spatula-oven-pitch
+                 :lower-boundary -0.3 :upper-boundary -0.2))))
+            (right-spatula-touch-oven-motion
+              (make-motion-phase
+               :id "right spatula above oven motion"
+               :constraints
+               (list
+                (make-feature-constraint
+                 :id "right spatula front right of pancake constraint"
+                 :relation spatula-front-right-pancake
+                 :lower-boundary 0.02 :upper-boundary 0.05)
+                (make-feature-constraint
+                 :id "right spatula front above of oven constraint"
+                 :relation spatula-front-above-oven
+                 :lower-boundary -0.05 :upper-boundary 0.01)
+                (make-feature-constraint
+                 :id "right spatula front behind of pancake constraint"
+                 :relation spatula-front-behind-pancake
+                 :lower-boundary -0.01 :upper-boundary 0.01)
+                (make-feature-constraint
+                 :id "right spatula front parallel to oven surface"
+                 :relation spatula-front-parallel-oven
+                 :lower-boundary -0.02 :upper-boundary 0.02)
+                (make-feature-constraint
+                 :id "right spatula tilted w.r.t. oven surface"
+                 :relation spatula-oven-pitch
+                 :lower-boundary -0.3 :upper-boundary -0.2))))
+            (right-spatula-move-away-motion
+              (make-motion-phase
+               :id "right spatula move away motion"
+               :constraints
+               (list
+                (make-feature-constraint
+                 :id "right spatula front right of pancake constraint"
+                 :relation spatula-front-right-pancake
+                 :lower-boundary 0.15 :upper-boundary 0.25)
+                (make-feature-constraint
+                 :id "right spatula front above of oven constraint"
+                 :relation spatula-front-above-oven
+                 :lower-boundary 0.1 :upper-boundary 0.2)
+                (make-feature-constraint
+                 :id "right spatula front behind of pancake constraint"
+                 :relation spatula-front-behind-pancake
+                 :lower-boundary -0.1 :upper-boundary 0.1)))))
+        (list right-spatula-above-oven-motion
+              right-spatula-touch-oven-motion
+              right-spatula-touch-oven-motion
+              right-spatula-move-away-motion
+              right-spatula-move-away-motion
+              right-spatula-move-away-motion)))))
 
 ;;;
 ;;; ASSEMBLING CONTROLLER CALLS
@@ -288,7 +430,7 @@
 ;;;
 
 (defun constraint-controller-finished-fluent ()
-  (cram-fccl:get-constraints-fulfilled-fluent (get-left-arm-fccl-controller)~
+  (cram-fccl:get-constraints-fulfilled-fluent (get-left-arm-fccl-controller)))
     
 ;;;
 ;;; AUXILIARY FACTS FOR OUR DESIGNATORS
