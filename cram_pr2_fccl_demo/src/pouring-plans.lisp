@@ -28,24 +28,17 @@
 
 (in-package :pr2-fccl-demo)
 
-(cpl-impl:def-cram-function pour-pancake-mix ()
+(cpl-impl:def-cram-function pouring ()
   (with-designators ((desig (action `((type constraints) (to pour)))))
-    (perform-constraint-desig desig)))
-
-(cpl-impl:def-cram-function flip-pancake ()
-  (with-designators ((desig (action `((type constraints) (to flip)))))
-    (reference desig)))
-
-(cpl-impl:def-cram-function perform-constraint-desig (desig)
-  (destructuring-bind (motions start-controller stop-controller finished-fluent)
-      (reference desig)
+    (destructuring-bind (motions start-controller stop-controller finished-fluent)
+        (reference desig)
     (ensure-vel-controllers)
-    (loop for motion in motions do
-      (cram-language:pursue
-        (funcall start-controller motion)
-        (cram-language:whenever ((cram-language:pulsed finished-fluent))
-          (when (cram-language-implementation:value finished-fluent)
-            (funcall stop-controller)))))))
+      (loop for motion in motions do
+        (cram-language:pursue
+          (funcall start-controller motion)
+          (cram-language:whenever ((cram-language:pulsed finished-fluent))
+            (when (cram-language-implementation:value finished-fluent)
+              (funcall stop-controller))))))))
 
 (cpl-impl:def-cram-function flipping ()
   (with-designators ((desig (action `((type constraints) (to flip)))))
