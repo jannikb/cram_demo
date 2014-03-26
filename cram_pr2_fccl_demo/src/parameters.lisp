@@ -29,15 +29,18 @@
 (in-package :pr2-fccl-demo)
 
 ;;;
-;;; KINEMATICS OF LEFT ARM
+;;; KINEMATICS OF LEFT AND RIGHT ARM
 ;;;
 
 (defparameter *l-arm-base-link* "torso_lift_link")
-
 (defparameter *l-arm-tip-link* "l_gripper_tool_frame")
-
 (defparameter *l-arm-kinematic-chain* 
   (cram-fccl:make-kinematic-chain *l-arm-base-link* *l-arm-tip-link*))
+
+(defparameter *r-arm-base-link* "torso_lift_link")
+(defparameter *r-arm-tip-link* "r_gripper_tool_frame")
+(defparameter *r-arm-kinematic-chain* 
+  (cram-fccl:make-kinematic-chain *r-arm-base-link* *r-arm-tip-link*))
 
 (defparameter *l-arm-joint-names*
   '("l_upper_arm_roll_joint"
@@ -47,6 +50,15 @@
     "l_elbow_flex_joint"
     "l_wrist_flex_joint"
     "l_wrist_roll_joint"))
+
+(defparameter *r-arm-joint-names*
+  '("r_upper_arm_roll_joint"
+    "r_shoulder_pan_joint"
+    "r_shoulder_lift_joint"
+    "r_forearm_roll_joint"
+    "r_elbow_flex_joint"
+    "r_wrist_flex_joint"
+    "r_wrist_roll_joint"))
 
 ;;;
 ;;; START CONFIGURATIONS FOR LEFT ARM
@@ -71,6 +83,25 @@
     (cl-robot-models:make-joint-state
      :joint-name "l_wrist_roll_joint" :joint-position -1.8614))))
 
+(defparameter *r-arm-pouring-start-config*
+  (cl-robot-models:make-robot-state
+   "Raphael" "PR2"
+   (list
+    (cl-robot-models:make-joint-state
+     :joint-name "r_upper_arm_roll_joint" :joint-position -1.9643297630604963)
+    (cl-robot-models:make-joint-state
+     :joint-name "r_shoulder_pan_joint" :joint-position -1.265335905500992)
+    (cl-robot-models:make-joint-state
+     :joint-name "r_shoulder_lift_joint" :joint-position 1.2666995326579538)
+    (cl-robot-models:make-joint-state
+     :joint-name "r_forearm_roll_joint" :joint-position 5.81991983730232)
+    (cl-robot-models:make-joint-state
+     :joint-name "r_elbow_flex_joint" :joint-position -0.2625872772879775)
+    (cl-robot-models:make-joint-state
+     :joint-name "r_wrist_flex_joint" :joint-position -0.13242260444085052)
+    (cl-robot-models:make-joint-state
+     :joint-name "r_wrist_roll_joint" :joint-position 2.64))))
+
 (defparameter *l-arm-flipping-start-config*
   (cl-robot-models:make-robot-state
    "Raphael" "PR2"
@@ -90,6 +121,25 @@
     (cl-robot-models:make-joint-state
      :joint-name "l_wrist_roll_joint" :joint-position 1.57))))
 
+(defparameter *r-arm-flipping-start-config*
+  (cl-robot-models:make-robot-state
+   "Raphael" "PR2"
+   (list
+    (cl-robot-models:make-joint-state
+     :joint-name "r_upper_arm_roll_joint" :joint-position -1.32)
+    (cl-robot-models:make-joint-state
+     :joint-name "r_shoulder_pan_joint" :joint-position -1.08)
+    (cl-robot-models:make-joint-state
+     :joint-name "r_shoulder_lift_joint" :joint-position 0.16)
+    (cl-robot-models:make-joint-state
+     :joint-name "r_forearm_roll_joint" :joint-position 0.0)
+    (cl-robot-models:make-joint-state
+     :joint-name "r_elbow_flex_joint" :joint-position -1.14)
+    (cl-robot-models:make-joint-state
+     :joint-name "r_wrist_flex_joint" :joint-position -1.05)
+    (cl-robot-models:make-joint-state
+     :joint-name "r_wrist_roll_joint" :joint-position 1.57))))
+
 ;;;
 ;;; STANDARD POSITION CONTROLLERS FOR PR2 ARMS
 ;;;
@@ -105,3 +155,4 @@
 ;;;
 
 (defparameter *l-arm-fccl-controller-action-name* "/l_arm_fccl_controller/command")
+(defparameter *r-arm-fccl-controller-action-name* "/r_arm_fccl_controller/command")
