@@ -49,15 +49,25 @@
 
 (cpl-impl:def-cram-function flipping ()
   (ensure-vel-controllers)
-  (let ((motions (left-arm-flipping-description))
-        (fluent (cram-fccl:get-constraints-fulfilled-fluent 
-                 (get-left-arm-fccl-controller))))
+  (let* ((left-arm-motions (left-arm-flipping-description))
+         (right-arm-motions (right-arm-flipping-description))
+         (motions (mapcar (lambda (a b) (cons a b)) left-arm-motions right-arm-motions))
+         (left-fluent (cram-fccl:get-constraints-fulfilled-fluent 
+                       (get-left-arm-fccl-controller)))
+         (right-fluent (cram-fccl:get-constraints-fulfilled-fluent 
+                        (get-right-arm-fccl-controller))))
     (loop for motion in motions do
       (cram-language:pursue
-        (cram-fccl:command-motion (get-left-arm-fccl-controller) motion)
-        (cram-language:whenever ((cram-language:pulsed fluent))
-          (when (cram-language-implementation:value fluent)
-            (cram-fccl:cancel-motion (get-left-arm-fccl-controller))))))))
+        (cram-fccl:command-motion (get-left-arm-fccl-controller) (first motion))
+        (cram-fccl:command-motion (get-right-arm-fccl-controller) (rest motion))
+        (cram-language:whenever ((cpl-impl:fl-or 
+                                  (cram-language:pulsed right-fluent)
+                                  (cram-language:pulsed left-fluent)))
+          (when (cpl-impl:fl-and (cram-language-implementation:value right-fluent)
+                                 (cram-language-implementation:value left-fluent))
+            (cram-language:par
+              (cram-fccl:cancel-motion (get-left-arm-fccl-controller))
+              (cram-fccl:cancel-motion (get-right-arm-fccl-controller)))))))))
   
 ;; SOME NAIVE POURING PLANS.
 ;; TO TEST THEM, MAKE SURE TO HAVE STARTED THE LAUNCH-FILE:
