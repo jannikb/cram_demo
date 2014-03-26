@@ -33,6 +33,7 @@
 ;;;
 
 (defparameter *l-arm-fccl-controller* nil)
+(defparameter *r-arm-fccl-controller* nil)
 
 (defun ensure-left-arm-fccl-controller ()
   (unless *l-arm-fccl-controller*
@@ -40,9 +41,19 @@
           (cram-fccl:make-fccl-action-client 
            *l-arm-fccl-controller-action-name* *l-arm-kinematic-chain*))))
 
+(defun ensure-right-arm-fccl-controller ()
+  (unless *r-arm-fccl-controller*
+    (setf *r-arm-fccl-controller*
+          (cram-fccl:make-fccl-action-client 
+           *r-arm-fccl-controller-action-name* *r-arm-kinematic-chain*))))
+
 (defun get-left-arm-fccl-controller ()
   (ensure-left-arm-fccl-controller)
   *l-arm-fccl-controller*)
+
+(defun get-right-arm-fccl-controller ()
+  (ensure-right-arm-fccl-controller)
+  *r-arm-fccl-controller*)
 
 ;;;
 ;;; HANDLE TO PR2 CONTROLLER MANAGER
@@ -69,6 +80,7 @@
 ;;;
 
 (defparameter *l-arm-position-controller* nil)
+(defparameter *r-arm-position-controller* nil)
 
 (defun ensure-left-arm-position-controller ()
   (unless *l-arm-position-controller*
@@ -76,6 +88,16 @@
           (cram-pr2-controllers:make-pr2-arm-position-controller-handle
            *l-arm-position-controller-action-name* *l-arm-joint-names*))))
 
+(defun ensure-right-arm-position-controller ()
+  (unless *r-arm-position-controller*
+    (setf *r-arm-position-controller*
+          (cram-pr2-controllers:make-pr2-arm-position-controller-handle
+           *r-arm-position-controller-action-name* *r-arm-joint-names*))))
+
 (defun get-left-arm-position-controller ()
   (ensure-left-arm-position-controller)
   *l-arm-position-controller*)
+
+(defun get-right-arm-position-controller ()
+  (ensure-right-arm-position-controller)
+  *r-arm-position-controller*)
