@@ -55,6 +55,11 @@
   (ensure-right-arm-fccl-controller)
   *r-arm-fccl-controller*)
 
+(defun get-fccl-controller (side)
+  (ecase side
+    (right-arm (get-right-arm-fccl-controller))
+    (left-arm (get-left-arm-fccl-controller))))
+
 ;;;
 ;;; HANDLE TO PR2 CONTROLLER MANAGER
 ;;;
