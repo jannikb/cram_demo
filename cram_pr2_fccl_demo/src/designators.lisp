@@ -34,7 +34,7 @@
 
 (defun knowrob-pouring-description ()
   (query-motion-description 
-   "motion:'PouringSomethingFromBottle'"
+   "motion:'PouringSomething'"
    "knowrob:'BottleCap'"
    "knowrob:'PancakeMaker'"))
 
@@ -80,7 +80,7 @@
         (oven-center
           (make-geometric-feature
            :id "pancake center"
-           :frame-id "oven"
+           :frame-id "pancake_maker"
            :feature-type 'PLANE
            :origin (cl-transforms:make-3d-vector 0 0 0.05)
            :orientation (cl-transforms:make-3d-vector 0 0 1))))
@@ -304,7 +304,7 @@
           (oven-center
            (make-geometric-feature
             :id "oven center"
-            :frame-id "oven"
+            :frame-id "pancake_maker"
             :feature-type 'PLANE
             :origin (cl-transforms:make-3d-vector 0 0 0.05)
             :orientation (cl-transforms:make-3d-vector 0 0 1))))
@@ -453,13 +453,13 @@
 
 (def-fact-group pr2-fccl-demo-designators (action-desig)
   
-  (<- (action-desig ?desig (?motion ?controller-start ?controller-stop ?controller-fluent))
+  (<- (action-desig ?desig (?motion ?r-start ?r-stop ?r-fluent))
     (constraints-desig? ?desig)
     (desig-prop ?desig (to pour))
     (lisp-fun knowrob-pouring-description ?motion)
-    (lisp-fun constraint-controller-start ?controller-start)
-    (lisp-fun constraint-controller-stop ?controller-stop)
-    (lisp-fun constraint-controller-finished-fluent ?controller-fluent))
+    (lisp-fun controller-start right-arm ?r-start)
+    (lisp-fun controller-stop right-arm ?r-stop)
+    (lisp-fun controller-fluent right-arm ?r-fluent))
 
   (<- (action-desig ?desig (?motion ?l-start ?l-stop ?l-fluent ?r-start ?r-stop ?r-fluent))
     (constraints-desig? ?desig)
