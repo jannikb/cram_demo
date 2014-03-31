@@ -28,7 +28,11 @@
 
 (in-package :cl-user)
 
-(defpackage cram-pr2-fccl-demo
+(desig-props:def-desig-package cram-pr2-fccl-demo
   (:nicknames :pr2-fccl-demo)
-  (:use #:cl-feature-constraints
-        #:cpl))
+  (:use #:common-lisp #:cl-feature-constraints)
+  (:import-from #:cram-designators 
+                reference constraints-desig? action-desig desig-prop action)
+  (:import-from #:cram-language-designator-support with-designators)
+  (:import-from #:cram-reasoning def-fact-group <- lisp-fun)
+  (:desig-properties type constraints to flip to pour))
