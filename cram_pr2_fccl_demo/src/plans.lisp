@@ -28,36 +28,104 @@
 
 (in-package :pr2-fccl-demo)
 
-(cpl-impl:def-cram-function pouring ()
+(cpl-impl:def-cram-function pancake-pouring-test ()
+  (let ((pancake-mix-pose
+          (cl-tf:make-pose-stamped
+           "r_gripper_tool_frame" 0
+           (cl-transforms:make-3d-vector 0.0 0.0 0.0)
+           (cl-transforms:make-identity-rotation)))
+        (pancake-maker-pose
+          (cl-tf:make-pose-stamped
+           "map" 0
+           (cl-transforms:make-3d-vector 0.434 0.0 0.703)
+           (cl-transforms:make-identity-rotation))))
+    (with-designators ((pancake-mix (cram-designators:object '()))
+                       (pancake-maker (cram-designators:object '())))
+      (set-pose pancake-mix pancake-mix-pose)
+      (set-pose pancake-maker pancake-maker-pose)
+      (demo-part-pouring pancake-mix pancake-maker))))
+
+(cpl-impl:def-cram-function pancake-flipping-test ()
+  (let ((l-spatula-pose
+          (cl-tf:make-pose-stamped
+           "l_gripper_tool_frame" 0
+           (cl-transforms:make-3d-vector 0.0 0.0 0.0)
+           (cl-transforms:make-identity-rotation)))
+        (r-spatula-pose
+          (cl-tf:make-pose-stamped
+           "r_gripper_tool_frame" 0
+           (cl-transforms:make-3d-vector 0.0 0.0 0.0)
+           (cl-transforms:make-identity-rotation)))
+        (pancake-pose
+          (cl-tf:make-pose-stamped
+           "map" 0
+           (cl-transforms:make-3d-vector 0.434 0.0 0.753)
+           (cl-transforms:make-identity-rotation)))
+        (pancake-maker-pose
+          (cl-tf:make-pose-stamped
+           "map" 0
+           (cl-transforms:make-3d-vector 0.434 0.0 0.703)
+           (cl-transforms:make-identity-rotation))))
+    (with-designators ((l-spatula (cram-designators:object '()))
+                       (r-spatula (cram-designators:object '()))
+                       (pancake (cram-designators:object '()))
+                       (pancake-maker (cram-designators:object '())))
+      (set-pose l-spatula l-spatula-pose)
+      (set-pose r-spatula r-spatula-pose)
+      (set-pose pancake pancake-pose)
+      (set-pose pancake-maker pancake-maker-pose)
+      (demo-part-flipping l-spatula r-spatula pancake pancake-maker))))
+          
+(cpl-impl:def-cram-function set-pose (obj-desig pose)
+  (with-slots (cram-designators:data) obj-desig
+    (setf cram-designators:data pose)))
+
+(cpl-impl:def-cram-function get-transform (obj-desig child-frame-id)
+  (with-slots (cl-tf:frame-id cl-tf:stamp cl-tf:origin cl-tf:orientation)
+      (reference obj-desig)
+    (cl-tf:make-stamped-transform
+     cl-tf:frame-id child-frame-id cl-tf:stamp cl-tf:origin cl-tf:orientation)))
+
+(cpl-impl:def-cram-function demo-part-pouring (pancake-mix pancake-maker)
   (with-designators ((desig (action `((type constraints) (to pour)))))
     (destructuring-bind (motions start-controller stop-controller finished-fluent)
         (reference desig)
-    (ensure-vel-controllers)
-      (loop for motion in motions do
-        (cram-language:pursue
-          (funcall start-controller motion)
-          (cram-language:whenever ((cram-language:pulsed finished-fluent))
-            (when (cram-language-implementation:value finished-fluent)
-              (funcall stop-controller))))))))
+      (cl-tf::with-tf-broadcasting ((get-tf-broadcaster) 
+                                    (get-transform pancake-mix "pancake_bottle")
+                                    (get-transform pancake-maker "pancake_maker"))
+        (ensure-vel-controllers)
+        (loop for motion in motions do
+          (cram-language:pursue
+            (funcall start-controller motion)
+            (cram-language:whenever ((cram-language:pulsed finished-fluent))
+              (when (cram-language-implementation:value finished-fluent)
+                (funcall stop-controller)))))))))
 
-(cpl-impl:def-cram-function flipping ()
+(cpl-impl:def-cram-function demo-part-flipping 
+    (spatula-left spatula-right pancake pancake-maker)
   (with-designators ((desig (action `((type constraints) (to flip)))))
   (destructuring-bind (motions l-start-controller l-stop-controller l-finished-fluent
                        r-start-controller r-stop-controller r-finished-fluent)
       (reference desig)
-    (ensure-vel-controllers)
-    (loop for motion in motions do
-      (cram-language:pursue
-        (funcall l-start-controller (first motion))
-        (funcall r-start-controller (rest motion))
-        (cram-language:whenever ((cpl-impl:fl-or 
-                                  (cram-language:pulsed l-finished-fluent)
-                                  (cram-language:pulsed r-finished-fluent)))
-          (when (cpl-impl:fl-and (cram-language-implementation:value l-finished-fluent)
-                                 (cram-language-implementation:value r-finished-fluent))
-            (cram-language:par
-              (funcall l-stop-controller)
-              (funcall r-stop-controller)))))))))
+    (cl-tf::with-tf-broadcasting 
+        ((get-tf-broadcaster)
+         (get-transform pancake "pancake")
+         (get-transform spatula-left "l_spatula_handle")
+         (get-transform spatula-right "r_spatula_handle")
+         (get-transform pancake-maker "pancake_maker"))
+      (ensure-vel-controllers)
+      (loop for motion in motions do
+        (cram-language:pursue
+          (funcall l-start-controller (first motion))
+          (funcall r-start-controller (rest motion))
+          (cram-language:whenever ((cpl-impl:fl-or 
+                                    (cram-language:pulsed l-finished-fluent)
+                                    (cram-language:pulsed r-finished-fluent)))
+            (when (cpl-impl:fl-and (cram-language-implementation:value l-finished-fluent)
+                                   (cram-language-implementation:value r-finished-fluent))
+              (cram-language:par
+                (funcall l-stop-controller)
+                (funcall r-stop-controller))))))))))
 
 (cpl-impl:def-cram-function move-into-flipping-configuration ()
   (ensure-pos-controllers)
@@ -66,3 +134,11 @@
                               *r-arm-flipping-start-config* 4.0)
     (pr2-controllers:move-arm (get-left-arm-position-controller)
                               *l-arm-flipping-start-config* 4.0)))
+
+(cpl-impl:def-cram-function move-into-pouring-configuration ()
+  (ensure-pos-controllers)
+  (cram-language:par
+    (pr2-controllers:move-arm (get-right-arm-position-controller)
+                              *r-arm-pouring-start-config* 4.0)
+    (pr2-controllers:move-arm (get-left-arm-position-controller)
+                              *l-arm-pouring-start-config* 4.0)))

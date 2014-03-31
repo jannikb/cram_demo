@@ -1,4 +1,4 @@
-;;; Copyright (c) 2013, Georg Bartels <georg.bartels@cs.uni-bremen.de>
+;;; Copyright (c) 2014, Georg Bartels <georg.bartels@cs.uni-bremen.de>
 ;;; All rights reserved.
 ;;;
 ;;; Redistribution and use in source and binary forms, with or without
@@ -26,31 +26,14 @@
 ;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;; POSSIBILITY OF SUCH DAMAGE.
 
-(defsystem cram-pr2-fccl-demo
-  :author "Georg Bartels <georg.bartels@cs.uni-bremen.de>"
-  :license "BSD"
-  :description "Demo package using FCCL controllers from CRAM."
+(in-package :pr2-fccl-demo)
 
-  :depends-on (roslisp
-               roslisp-utilities
-               cram-language
-               cram-json-prolog
-               cram-utilities
-               designators
-               cram-language-designator-support
-               cram-reasoning
-               cram-fccl
-               cram-pr2-controllers
-               cl-tf
-               cl-feature-constraints
-               cl-robot-models)
-  :components
-  ((:module "src"
-    :components
-    ((:file "package")
-     (:file "knowrob-utils" :depends-on ("package"))
-     (:file "parameters" :depends-on ("package"))
-     (:file "controllers" :depends-on ("package" "parameters"))
-     (:file "tf" :depends-on ("package" "parameters"))
-     (:file "designators" :depends-on ("package" "knowrob-utils" "controllers"))
-     (:file "plans" :depends-on ("package" "designators" "tf"))))))
+(defparameter *tf-broadcaster* nil)
+
+(defun ensure-tf-broadcaster ()
+  (unless *tf-broadcaster*
+    (setf *tf-broadcaster* (cl-tf:make-transform-broadcaster :topic *tf-relay-topic*))))
+
+(defun get-tf-broadcaster ()
+  (ensure-tf-broadcaster)
+  *tf-broadcaster*)
