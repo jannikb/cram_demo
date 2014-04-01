@@ -51,7 +51,8 @@
                  "owl_subclass_of(Tool, " tool-type-id "),"
                  "class_properties(Sub, knowrob:objectActedOn, World),"
                  "owl_subclass_of(World, " object-type-id ")"))
-         (bindings (cut:force-ll (json-prolog:prolog-simple query))))
+         (bindings (cut:force-ll (json-prolog:prolog-simple
+                                  query :package 'pr2-fccl-demo))))
     (if bindings
         (mapcar (lambda (binding)
                   (cut:with-vars-bound (|?Sub| |?Tool| |?World|) binding
@@ -71,7 +72,7 @@
  'knowrob-query-error' in case of failure."
   (declare (type string phase-id tool-type-id object-type-id))
   (let* ((query (concatenate 'string "motion_constraint(" phase-id ", Constraint)"))
-         (bindings (cut:force-ll (json-prolog:prolog-simple query))))
+         (bindings (cut:force-ll (json-prolog:prolog-simple query :package 'pr2-fccl-demo))))
     (if bindings
         (cl-feature-constraints:make-motion-phase
          :id phase-id
@@ -95,7 +96,7 @@
                              "constraint_properties("
                              tool-type-id ", " object-type-id ", " constraint-id
                              ", Type, ToolFeature, WorldFeature, Reference, Lower, Upper)"))
-         (bindings (cut:lazy-car (json-prolog:prolog-simple query))))
+         (bindings (cut:lazy-car (json-prolog:prolog-simple query :package 'pr2-fccl-demo))))
     (cut:with-vars-bound 
         (|?Type| |?ToolFeature| |?WorldFeature| |?Reference| |?Lower| |?Upper|) bindings
       (if bindings
@@ -119,22 +120,28 @@
  of type 'knowrob-translation-error in case of failure."
   (declare (type symbol constraint-type))
   (cond ((eql constraint-type
-              (intern "'http://ias.cs.tum.edu/kb/motion-constraints.owl#PerpendicularityConstraint'")) 
+              (intern "'http://ias.cs.tum.edu/kb/motion-constraints.owl#PerpendicularityConstraint'"
+                      'pr2-fccl-demo)) 
          'cl-feature-constraints:perpendicular)
         ((eql constraint-type
-              (intern "'http://ias.cs.tum.edu/kb/motion-constraints.owl#DistanceConstraint'"))
+              (intern "'http://ias.cs.tum.edu/kb/motion-constraints.owl#DistanceConstraint'"
+                      'pr2-fccl-demo))
          'cl-feature-constraints:distance)
         ((eql constraint-type
-              (intern "'http://ias.cs.tum.edu/kb/motion-constraints.owl#HeightConstraint'"))
+              (intern "'http://ias.cs.tum.edu/kb/motion-constraints.owl#HeightConstraint'"
+                      'pr2-fccl-demo))
          'cl-feature-constraints:above)
         ((eql constraint-type
-              (intern "'http://ias.cs.tum.edu/kb/motion-constraints.owl#PointingAtConstraint'"))
+              (intern "'http://ias.cs.tum.edu/kb/motion-constraints.owl#PointingAtConstraint'"
+                      'pr2-fccl-demo))
          'cl-feature-constraints:pointing)
         ((eql constraint-type
-              (intern "'http://ias.cs.tum.edu/kb/motion-constraints.owl#RightOfConstraint'"))
+              (intern "'http://ias.cs.tum.edu/kb/motion-constraints.owl#RightOfConstraint'"
+                      'pr2-fccl-demo))
          'cl-feature-constraints:right)
         ((eql constraint-type
-              (intern "'http://ias.cs.tum.edu/kb/motion-constraints.owl#InFrontOfConstraint'"))
+              (intern "'http://ias.cs.tum.edu/kb/motion-constraints.owl#InFrontOfConstraint'"
+                      'pr2-fccl-demo))
          'cl-feature-constraints:infront)
         (t (error 'knowrob-translation-error
                    :text "Could not translate Knowrob symbol for feature constraint."
@@ -150,7 +157,7 @@
                              "feature_properties("
                              feature-id
                              ", Type, _, TfFrame, Position, Direction)"))
-         (bindings (cut:lazy-car (json-prolog:prolog-simple query))))
+         (bindings (cut:lazy-car (json-prolog:prolog-simple query :package 'pr2-fccl-demo))))
     (if bindings 
         (cut:with-vars-bound (|?Type| |?Position| |?Direction| |?TfFrame|) bindings
           (cl-feature-constraints:make-geometric-feature
@@ -182,13 +189,16 @@
  of type 'knowrob-translation-error' in case of failure."
   (declare (type symbol feature-type))
   (cond ((eql feature-type
-              (intern "'http://ias.cs.tum.edu/kb/knowrob.owl#PointFeature'")) 
+              (intern "'http://ias.cs.tum.edu/kb/knowrob.owl#PointFeature'"
+                      'pr2-fccl-demo)) 
          'cl-feature-constraints:point)
         ((eql feature-type
-              (intern "'http://ias.cs.tum.edu/kb/knowrob.owl#LineFeature'")) 
+              (intern "'http://ias.cs.tum.edu/kb/knowrob.owl#LineFeature'"
+                      'pr2-fccl-demo)) 
          'cl-feature-constraints:line)
         ((eql feature-type
-              (intern "'http://ias.cs.tum.edu/kb/knowrob.owl#PlaneFeature'")) 
+              (intern "'http://ias.cs.tum.edu/kb/knowrob.owl#PlaneFeature'"
+                      'pr2-fccl-demo)) 
          'cl-feature-constraints:plane)
         (t (error
             'knowrob-translation-error
