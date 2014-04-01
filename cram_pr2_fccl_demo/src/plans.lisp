@@ -93,6 +93,7 @@
       (cl-tf::with-tf-broadcasting ((get-tf-broadcaster) 
                                     (get-transform pancake-mix "pancake_bottle")
                                     (get-transform pancake-maker "pancake_maker"))
+        (cpl-impl:sleep* 2)
         (ensure-vel-controllers)
         (loop for motion in motions do
           (cram-language:pursue
@@ -113,6 +114,7 @@
          (get-transform spatula-left "l_spatula_handle")
          (get-transform spatula-right "r_spatula_handle")
          (get-transform pancake-maker "pancake_maker"))
+      (cpl-impl:sleep* 2)
       (ensure-vel-controllers)
       (loop for motion in motions do
         (cram-language:pursue
