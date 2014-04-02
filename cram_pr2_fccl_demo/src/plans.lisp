@@ -100,7 +100,8 @@
             (funcall start-controller motion)
             (cram-language:whenever ((cram-language:pulsed finished-fluent))
               (when (cram-language-implementation:value finished-fluent)
-                (funcall stop-controller)))))))))
+                (funcall stop-controller)))))
+        (ensure-pos-controllers)))))
 
 (cpl-impl:def-cram-function demo-part-flipping 
     (spatula-left spatula-right pancake pancake-maker)
@@ -127,7 +128,8 @@
                                    (cram-language-implementation:value r-finished-fluent))
               (cram-language:par
                 (funcall l-stop-controller)
-                (funcall r-stop-controller))))))))))
+                (funcall r-stop-controller))))))
+      (ensure-pos-controllers)))))
 
 (cpl-impl:def-cram-function move-into-flipping-configuration ()
   (ensure-pos-controllers)
