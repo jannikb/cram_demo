@@ -96,12 +96,14 @@
         (cpl-impl:sleep* 2)
         (ensure-vel-controllers)
         (loop for motion in motions do
+          (add-motion-phase-to-designator-description desig (id motion))
           (cram-language:pursue
             (funcall start-controller motion)
             (cram-language:whenever ((cram-language:pulsed finished-fluent))
               (when (cram-language-implementation:value finished-fluent)
                 (funcall stop-controller)))))
-        (ensure-pos-controllers)))))
+        (ensure-pos-controllers)
+        (format t "~a~%" (cram-designators:current-desig desig))))))
 
 (cpl-impl:def-cram-function demo-part-flipping 
     (spatula-left spatula-right pancake pancake-maker)
@@ -146,3 +148,17 @@
                               *r-arm-pouring-start-config* 4.0)
     (pr2-controllers:move-arm (get-left-arm-position-controller)
                               *l-arm-pouring-start-config* 4.0)))
+
+(defun add-motion-phase-to-designator-description (old-desig new-phase-id)
+  (let ((current-desig (cram-designators:current-desig old-desig)))
+    (cram-designators:with-desig-props (phases) current-desig
+    (cram-designators:equate
+     current-desig
+     (cram-designators:copy-designator
+      current-desig
+      :new-description (generate-new-motion-phase-description phases new-phase-id))))))
+
+(defun generate-new-motion-phase-description (old-phase-description new-phase-id)
+  (if old-phase-description
+      `((phases ,(append old-phase-description `((phase ,new-phase-id)))))
+      `((phases ((phase ,new-phase-id))))))

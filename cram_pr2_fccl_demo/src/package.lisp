@@ -35,4 +35,4 @@
                 reference constraints-desig? action-desig desig-prop action)
   (:import-from #:cram-language-designator-support with-designators)
   (:import-from #:cram-reasoning def-fact-group <- lisp-fun)
-  (:desig-properties type constraints to flip to pour))
+  (:desig-properties type constraints to flip to pour phases phase))
