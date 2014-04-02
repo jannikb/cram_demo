@@ -76,11 +76,11 @@
       (set-pose pancake-maker pancake-maker-pose)
       (demo-part-flipping l-spatula r-spatula pancake pancake-maker))))
           
-(cpl-impl:def-cram-function set-pose (obj-desig pose)
+(defun set-pose (obj-desig pose)
   (with-slots (cram-designators:data) obj-desig
     (setf cram-designators:data pose)))
 
-(cpl-impl:def-cram-function get-transform (obj-desig child-frame-id)
+(defun get-transform (obj-desig child-frame-id)
   (with-slots (cl-tf:frame-id cl-tf:stamp cl-tf:origin cl-tf:orientation)
       (reference obj-desig)
     (cl-tf:make-stamped-transform
