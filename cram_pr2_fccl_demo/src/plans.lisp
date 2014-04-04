@@ -76,11 +76,11 @@
       (set-pose pancake-maker pancake-maker-pose)
       (demo-part-flipping l-spatula r-spatula pancake pancake-maker))))
           
-(cpl-impl:def-cram-function set-pose (obj-desig pose)
+(defun set-pose (obj-desig pose)
   (with-slots (cram-designators:data) obj-desig
     (setf cram-designators:data pose)))
 
-(cpl-impl:def-cram-function get-transform (obj-desig child-frame-id)
+(defun get-transform (obj-desig child-frame-id)
   (with-slots (cl-tf:frame-id cl-tf:stamp cl-tf:origin cl-tf:orientation)
       (reference obj-desig)
     (cl-tf:make-stamped-transform
@@ -93,13 +93,17 @@
       (cl-tf::with-tf-broadcasting ((get-tf-broadcaster) 
                                     (get-transform pancake-mix "pancake_bottle")
                                     (get-transform pancake-maker "pancake_maker"))
+        (cpl-impl:sleep* 2)
         (ensure-vel-controllers)
         (loop for motion in motions do
+          (add-motion-phase-to-designator-description desig (id motion))
           (cram-language:pursue
             (funcall start-controller motion)
             (cram-language:whenever ((cram-language:pulsed finished-fluent))
               (when (cram-language-implementation:value finished-fluent)
-                (funcall stop-controller)))))))))
+                (funcall stop-controller)))))
+        (ensure-pos-controllers)
+        (format t "~a~%" (cram-designators:current-desig desig))))))
 
 (cpl-impl:def-cram-function demo-part-flipping 
     (spatula-left spatula-right pancake pancake-maker)
@@ -113,6 +117,7 @@
          (get-transform spatula-left "l_spatula_handle")
          (get-transform spatula-right "r_spatula_handle")
          (get-transform pancake-maker "pancake_maker"))
+      (cpl-impl:sleep* 2)
       (ensure-vel-controllers)
       (loop for motion in motions do
         (cram-language:pursue
@@ -125,7 +130,8 @@
                                    (cram-language-implementation:value r-finished-fluent))
               (cram-language:par
                 (funcall l-stop-controller)
-                (funcall r-stop-controller))))))))))
+                (funcall r-stop-controller))))))
+      (ensure-pos-controllers)))))
 
 (cpl-impl:def-cram-function move-into-flipping-configuration ()
   (ensure-pos-controllers)
@@ -142,3 +148,17 @@
                               *r-arm-pouring-start-config* 4.0)
     (pr2-controllers:move-arm (get-left-arm-position-controller)
                               *l-arm-pouring-start-config* 4.0)))
+
+(defun add-motion-phase-to-designator-description (old-desig new-phase-id)
+  (let ((current-desig (cram-designators:current-desig old-desig)))
+    (cram-designators:with-desig-props (phases) current-desig
+    (cram-designators:equate
+     current-desig
+     (cram-designators:copy-designator
+      current-desig
+      :new-description (generate-new-motion-phase-description phases new-phase-id))))))
+
+(defun generate-new-motion-phase-description (old-phase-description new-phase-id)
+  (if old-phase-description
+      `((phases ,(append old-phase-description `((phase ,new-phase-id)))))
+      `((phases ((phase ,new-phase-id))))))

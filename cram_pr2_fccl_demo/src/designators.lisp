@@ -82,7 +82,7 @@
            :id "pancake center"
            :frame-id "pancake_maker"
            :feature-type 'PLANE
-           :origin (cl-transforms:make-3d-vector 0 0 0.05)
+           :origin (cl-transforms:make-3d-vector 0 0 0.00)
            :orientation (cl-transforms:make-3d-vector 0 0 1))))
     ;;; RELATIONS
     (let ((spatula-front-above-oven-relation
