@@ -28,12 +28,12 @@
 
 (in-package :controller-experiments)
 
-(defgeneric assoc (description &rest))
+(defgeneric add-association (description &rest rest))
 
-(defgeneric dissoc (description &rest))
+(defgeneric remove-association (description &rest rest))
 
-(defgeneric find (description key))
+(defgeneric find-association (description key))
 
-(defgeneric get (description key))
+(defgeneric get-association (description key))
 
-(defgeneric contains-p (description key))
+(defgeneric contains-association-p (description key))
