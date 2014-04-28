@@ -28,7 +28,18 @@
 
 (in-package :controller-experiments)
 
-(defun instantiate-class-description (description)
+(defgeneric instantiate-description (description))
+
+(defmethod instantiate-description ((description number))
+  description)
+
+(defmethod instantiate-description ((description string))
+  description)
+
+(defmethod instantiate-description ((description symbol))
+  description)
+
+(defmethod instantiate-description ((description hash-table))
   (load-system description)
   (initialize-class-instance (create-class description) description))
 
@@ -52,7 +63,8 @@
           (read-value description (to-keyword (get-slot-name slot-definition)))
         (when slot-init-value-p
           (eval `(with-slots (,(get-slot-symbol slot-definition)) ,class-instance
-                   (setf ,(get-slot-symbol slot-definition) ,slot-init-value)))))))
+                   (setf ,(get-slot-symbol slot-definition) 
+                         ,(instantiate-description slot-init-value))))))))
   class-instance)
           
 (defun to-symbol (symbol-name package-name)
