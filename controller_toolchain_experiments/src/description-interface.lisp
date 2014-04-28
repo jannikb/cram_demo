@@ -26,17 +26,14 @@
 ;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;; POSSIBILITY OF SUCH DAMAGE.
 
-(defsystem controller-toolchain-experiments
-  :author "Georg Bartels <georg.bartels@cs.uni-bremen.de>"
-  :license "BSD"
-  :description "A playground to experiment with semantic descriptions
-                of controller toolchains."
-  :depends-on (cl-robot-controllers)
-  :components
-  ((:module "src"
-    :components
-    ((:file "package")
-     (:file "description-interface" :depends-on ("package"))
-     (:file "hash-table-descriptions" :depends-on ("package" "description-interface"))
-     (:file "instantiate-descriptions" 
-      :depends-on ("package" "description-interface" "hash-table-descriptions"))))))
+(in-package :controller-experiments)
+
+(defgeneric assoc (description &rest))
+
+(defgeneric dissoc (description &rest))
+
+(defgeneric find (description key))
+
+(defgeneric get (description key))
+
+(defgeneric contains-p (description key))
