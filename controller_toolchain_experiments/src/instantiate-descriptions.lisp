@@ -30,9 +30,7 @@
 
 (defun instantiate-class-description (description)
   (load-system description)
-  (let ((class-instance (create-class description)))
-    (initialize-class-instance class-instance description)
-    class-instance))
+  (initialize-class-instance (create-class description) description))
 
 (defun load-system (description)
   (asdf:load-system (to-keyword (read-value description :system-name t))))
@@ -54,7 +52,8 @@
           (read-value description (to-keyword (get-slot-name slot-definition)))
         (when slot-init-value-p
           (eval `(with-slots (,(get-slot-symbol slot-definition)) ,class-instance
-                   (setf ,(get-slot-symbol slot-definition) ,slot-init-value))))))))
+                   (setf ,(get-slot-symbol slot-definition) ,slot-init-value)))))))
+  class-instance)
           
 (defun to-symbol (symbol-name package-name)
   (intern (string-upcase symbol-name) (string-upcase package-name)))
