@@ -28,9 +28,9 @@
 
 (in-package :controller-experiments)
 
-(defgeneric add-association (description &rest rest))
+(defgeneric add-associations (description &rest rest))
 
-(defgeneric remove-association (description &rest rest))
+(defgeneric remove-associations (description &rest rest))
 
 (defgeneric find-association (description key))
 

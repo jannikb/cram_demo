@@ -28,6 +28,35 @@
 
 (in-package :controller-experiments)
 
+(defmethod add-associations ((description hash-table) &rest rest)
+  (when (/= (rem (length rest) 2) 0)
+    (error "You called add-associations with an odd number of rest-arguments."))
+  (if (= (length rest) 0)
+      description
+      (destructuring-bind (key value &rest remainder) rest
+        (setf (gethash key description) value)
+        (apply #'add-associations description remainder))))
+
+(defmethod remove-associations ((description hash-table) &rest rest)
+  (if (= (length rest) 0)
+      description
+      (destructuring-bind (key &rest remainder) rest
+        (remhash key description)
+        (apply #'remove-associations description remainder))))
+
+(defmethod find-association ((description hash-table) key)
+  (gethash key description))
+
+(defmethod get-association ((description hash-table) key)
+  (multiple-value-bind (value value-present-p) (find-association description key)
+    (declare (ignore value-present-p))
+    value))
+
+(defmethod contains-association-p ((description hash-table) key)
+  (multiple-value-bind (value value-present-p) (find-association description key)
+    (declare (ignore value))
+    value-present-p))
+
 ;;;
 ;;; GENERIC SETUP OF HASHED CONTROLLER CONFIGURATIONS
 ;;;
