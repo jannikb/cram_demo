@@ -44,12 +44,12 @@
   (initialize-class-instance (create-class description) description))
 
 (defun load-system (description)
-  (asdf:load-system (to-keyword (read-value description :system-name t))))
+  (asdf:load-system (to-keyword (find-association-with-error description :system-name))))
 
 (defun create-class (description)
   (make-instance 
-   (to-symbol (read-value description :class-name t)
-              (read-value description :system-name t))))
+   (to-symbol (find-association-with-error description :class-name)
+              (find-association-with-error description :system-name))))
 
 (defun initialize-class-instance (class-instance description)
   (labels ((get-slot-definitions (class-instance)
@@ -60,12 +60,19 @@
              (symbol-name (get-slot-symbol slot-definition))))
     (loop for slot-definition in (get-slot-definitions class-instance) do
       (multiple-value-bind (slot-init-value slot-init-value-p)
-          (read-value description (to-keyword (get-slot-name slot-definition)))
+          (find-association description (to-keyword (get-slot-name slot-definition)))
         (when slot-init-value-p
           (eval `(with-slots (,(get-slot-symbol slot-definition)) ,class-instance
                    (setf ,(get-slot-symbol slot-definition) 
                          ,(instantiate-description slot-init-value))))))))
   class-instance)
+
+(defun find-association-with-error (description key)
+  (multiple-value-bind (value key-present-p) 
+      (find-association description key)
+    (if key-present-p
+        (values value key-present-p)
+        (error "No key ~a in description ~a.~%" key description))))
           
 (defun to-symbol (symbol-name package-name)
   (intern (string-upcase symbol-name) (string-upcase package-name)))

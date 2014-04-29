@@ -76,17 +76,4 @@
 ;;;   and specifying that the controller-type is :unknown:
 ;;;     CL-USER > (make-controller config :unknown)
 ;;;     CL-USER > #<P-CONTROLLER {...}>
-;;;   
-
-(defclass description ()
-  ((content :initform (make-hash-table :test 'equal) :initarg :content
-            :accessor content :type hash-table
-            :documentation "For internal use. Hashed content of this description."))
-  (:documentation "Descriptions for prototyping and runtime re-configuration."))
-
-(defun read-value (description keyword &optional (ensure-present-p nil))
-  (multiple-value-bind (value key-present-p)
-      (gethash keyword description)
-    (if (and ensure-present-p (not key-present-p))
-        (error "No key ~a in description ~a.~%" keyword description)
-        (values value key-present-p))))
+;;;
