@@ -26,19 +26,32 @@
 ;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;; POSSIBILITY OF SUCH DAMAGE.
 
-(defsystem controller-toolchain-experiments
-  :author "Georg Bartels <georg.bartels@cs.uni-bremen.de>"
-  :license "BSD"
-  :description "A playground to experiment with semantic descriptions
-                of controller toolchains."
-  :depends-on (cl-robot-controllers)
-  :components
-  ((:module "src"
-    :components
-    ((:file "package")
-     (:file "function-composition" :depends-on ("package"))
-     (:file "description-interface" :depends-on ("package"))
-     (:file "hash-table-descriptions" :depends-on ("package" "description-interface"))
-     (:file "instantiate-descriptions" 
-      :depends-on ("package" "description-interface" "hash-table-descriptions"
-                             "function-composition"))))))
+(in-package :controller-experiments)
+
+(defmacro compose (&rest functions) 
+  "Takes a sequence of symbols denoting functions in `functions' and
+ assembles a lambda-function which corresponds to the composition of those
+ functions. Two assumptions have been made:
+   (1) the last function in `functions' has arity 1
+   (2) all functions next to each other in the list have matching arity
+
+ Example usage:
+   CL_USER> (funcall (compose 1+ (lambda (x) (* 3 x)) 1+) 1)
+   => 7
+
+ Note: I've taken quite some inspiration from Paul Graham's 'On LISP'.
+   See: http://dunsmor.com/lisp/onlisp/onlisp_19.html"
+  `#',(recursively-build-composition functions))
+
+(defun recursively-build-composition (functions)
+  "Actual implement of macro 'compose' in a function."
+  (case (length functions)
+    (0 'identity)
+    (1 (car functions))
+    (t (let ((g (gensym)))
+         `(lambda (,g)
+            ,(labels ((recursion (fns)
+                        (if fns
+                            `(,(car fns) ,(recursion (cdr fns)))
+                            g)))
+               (recursion functions)))))))
