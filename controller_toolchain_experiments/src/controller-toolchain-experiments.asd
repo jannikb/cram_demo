@@ -31,14 +31,17 @@
   :license "BSD"
   :description "A playground to experiment with semantic descriptions
                 of controller toolchains."
-  :depends-on (cl-robot-controllers ros-msg-conversions cl-utilities)
+  :depends-on 
+  (cl-robot-controllers 
+   cl-robot-models
+   roslisp
+   roslisp-interfaces 
+   serapeum 
+   cl-utilities
+   sensor_msgs-msg
+   std_msgs-msg)
   :components
-  ((:module "src"
-    :components
-    ((:file "package")
-     (:file "function-composition" :depends-on ("package"))
-     (:file "description-interface" :depends-on ("package"))
-     (:file "hash-table-descriptions" :depends-on ("package" "description-interface"))
-     (:file "instantiate-descriptions" 
-      :depends-on ("package" "description-interface" "hash-table-descriptions"
-                             "function-composition"))))))
+  ((:file "package")
+   (:file "sensor-msgs" :depends-on ("package"))
+   (:file "std-msgs" :depends-on ("package"))
+   (:file "instantiate-descriptions" :depends-on ("package" "sensor-msgs" "std-msgs"))))

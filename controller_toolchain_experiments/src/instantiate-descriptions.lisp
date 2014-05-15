@@ -181,7 +181,7 @@
       (read-description (get-association-with-error descr :roslisp-publisher))
     `(let ((publisher (roslisp:advertise ,topic-name ',msg-type)))
        (lambda (data)
-         (roslisp:publish publisher (msg-conversions::to-msg data ',msg-type))))))
+         (roslisp:publish publisher (roslisp-interfaces:to-msg data ',msg-type))))))
 
 (defun read-let-description (descr)
   (let* ((var-list (get-association-with-error descr :let-ordering))

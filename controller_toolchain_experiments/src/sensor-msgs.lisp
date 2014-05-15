@@ -26,11 +26,11 @@
 ;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;; POSSIBILITY OF SUCH DAMAGE.
 
-(in-package :msg-conversions)
+(in-package :controller-experiments)
 
-(defmethod to-msg ((data hash-table) (msg-type (eql 'sensor_msgs-msg:jointstate)))
+(defmethod roslisp-interfaces:to-msg ((data hash-table) (msg-type (eql 'sensor_msgs-msg:jointstate)))
   (let ((names '()) (positions '()) (velocities '()) (efforts '()))
-    (maphash-values 
+    (alexandria:maphash-values 
      (lambda (joint-state)
        (with-slots (joint-name joint-position joint-velocity joint-effort) joint-state
          (push joint-name names)
@@ -45,7 +45,7 @@
               :velocity (coerce (reverse velocities) 'vector)
               :effort (coerce (reverse efforts) 'vector))))
               
-(defmethod from-msg ((msg sensor_msgs-msg:jointstate))
+(defmethod roslisp-interfaces:from-msg ((msg sensor_msgs-msg:jointstate))
   (let ((joint-states (make-hash-table :test 'equal)))
     (with-fields (name position velocity effort) msg
         (loop for index to (1- (length name)) do
