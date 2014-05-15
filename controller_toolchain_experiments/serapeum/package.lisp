@@ -29,4 +29,13 @@
 (in-package :cl-user)
 
 (defpackage :serapeum
-  (:use #:common-lisp))
+  (:use #:common-lisp)
+  (:export
+   ;; description interface
+   add-associations remove-associations find-association get-association
+   contains-association-p get-keys get-values copy-description cherry-pick-associations
+   find-association-with-error get-association-with-error
+   ;; hash-table-description
+   hash-table->alist-recursively make-hash-table-description
+   ;; function composition
+   compose))
