@@ -29,4 +29,12 @@
 (in-package :cl-user)
 
 (defpackage :roslisp-streamer
-  (:use #:common-lisp #:roslisp #:roslisp-interfaces))
+  (:use #:common-lisp #:roslisp #:roslisp-interfaces)
+  (:export
+   ;; ros-topic-description
+   ros-topic-description make-ros-topic-description copy-ros-topic-description
+   ros-topic-description-p lisp-package msg-type topic
+   ;; ros-streamer
+   ros-streamer make-ros-streamer copy-ros-streamer ros-streamer-p 
+   function in-topic-descr out-topic-descr ros-streamer-up-p start-ros-streamer
+   stop-ros-streamer ros-streamer-error))
