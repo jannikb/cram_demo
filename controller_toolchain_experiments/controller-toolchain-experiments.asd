@@ -31,7 +31,7 @@
   :license "BSD"
   :description "A playground to experiment with semantic descriptions
                 of controller toolchains."
-  :depends-on (cl-robot-controllers)
+  :depends-on (cl-robot-controllers ros-msg-conversions cl-utilities)
   :components
   ((:module "src"
     :components

@@ -26,38 +26,33 @@
 ;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;; POSSIBILITY OF SUCH DAMAGE.
 
-(in-package :controller-experiments)
+(in-package :msg-conversions)
 
-(defgeneric add-associations (description &rest associations))
-
-(defgeneric remove-associations (description &rest keys))
-
-(defgeneric find-association (description key))
-
-(defgeneric get-association (description key))
-
-(defgeneric contains-association-p (description key))
-
-(defgeneric get-keys (description))
-
-(defgeneric get-values (description))
-
-(defgeneric copy-description (description))
-
-(defun cherry-pick-associations (description &rest keys)
-  (apply #'remove-associations (copy-description description)
-         (remove-if (lambda (key) (member key keys)) (get-keys description))))
-
-(defun find-association-with-error (description key)
-  (multiple-value-bind (value key-present-p) 
-      (find-association description key)
-    (if key-present-p
-        (values value key-present-p)
-        (error "No key ~a in description ~a.~%" key description))))
- 
-(defun get-association-with-error (description key)
-  (multiple-value-bind (value key-present-p) 
-      (find-association description key)
-    (if key-present-p
-        value
-        (error "No key ~a in description ~a.~%" key description))))
+(defmethod to-msg ((data hash-table) (msg-type (eql 'sensor_msgs-msg:jointstate)))
+  (let ((names '()) (positions '()) (velocities '()) (efforts '()))
+    (maphash-values 
+     (lambda (joint-state)
+       (with-slots (joint-name joint-position joint-velocity joint-effort) joint-state
+         (push joint-name names)
+         (push joint-position positions)
+         (push joint-velocity velocities)
+         (push joint-effort efforts)))
+     data)
+    (make-msg "sensor_msgs/jointstate" 
+              (:stamp :header) (ros-time)
+              :name (coerce (reverse names) 'vector)
+              :position (coerce (reverse positions) 'vector)
+              :velocity (coerce (reverse velocities) 'vector)
+              :effort (coerce (reverse efforts) 'vector))))
+              
+(defmethod from-msg ((msg sensor_msgs-msg:jointstate))
+  (let ((joint-states (make-hash-table :test 'equal)))
+    (with-fields (name position velocity effort) msg
+        (loop for index to (1- (length name)) do
+          (setf (gethash (aref name index) joint-states)
+                (cl-robot-models:make-joint-state
+                 :joint-name (aref name index)
+                 :joint-position (aref position index)
+                 :joint-velocity (aref velocity index)
+                 :joint-effort (aref effort index)))))
+    joint-states))

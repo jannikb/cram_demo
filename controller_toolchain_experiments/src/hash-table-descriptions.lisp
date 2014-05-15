@@ -57,23 +57,28 @@
     (declare (ignore value))
     value-present-p))
 
+(defmethod get-keys ((description hash-table))
+  (alexandria:hash-table-keys description))
+
+(defmethod get-values ((description hash-table))
+  (alexandria:hash-table-values description))
+
+(defmethod copy-description ((description hash-table))
+  (alexandria:copy-hash-table description))
+
 ;;;
-;;; GENERIC SETUP OF HASHED CONTROLLER CONFIGURATIONS
+;;; UTILS I CAME UP WITH
 ;;;
-;;; The idea is to provide a configuration with a hash-table inside
-;;; which fully specifies which controller to create and with which
-;;; values to fill it. My intention is to instantiate controllers at
-;;; runtime from data without a need to directly depending on the lib.
-;;;
-;;; EXAMPLE: P-CONTROLLER
-;;;   Hash-table in slot 'content' is expected to have the following
-;;;   key-value pairs:
-;;;     :controller-name --> "P-CONTROLLER"
-;;;     :package-name --> "CL-ROBOT-CONTROLLERS"
-;;;     :p-gain --> 2.5
-;;;
-;;;   Calling make-controller with such a configuration `config'
-;;;   and specifying that the controller-type is :unknown:
-;;;     CL-USER > (make-controller config :unknown)
-;;;     CL-USER > #<P-CONTROLLER {...}>
-;;;
+
+(defun hash-table->alist-recursively (table)
+  (let ((alist nil))
+    (maphash (lambda (k v)
+               (if (hash-table-p v)
+                   (push (cons k (hash-table->alist-recursively v)) alist)
+                   (push (cons k v) alist)))
+             table)
+    alist))
+
+(defun make-hash-table-description (&rest associations)
+  (let ((table (make-hash-table)))
+    (apply #'add-associations table associations)))

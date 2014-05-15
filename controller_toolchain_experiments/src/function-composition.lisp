@@ -41,10 +41,11 @@
 
  Note: I've taken quite some inspiration from Paul Graham's 'On LISP'.
    See: http://dunsmor.com/lisp/onlisp/onlisp_19.html"
+  (declare (optimize (speed 3) (safety 0) (space 0) (debug 1)))
   `#',(recursively-build-composition functions))
 
 (defun recursively-build-composition (functions)
-  "Actual implement of macro 'compose' in a function."
+  "Actual implementation of macro 'compose' in a function."
   (case (length functions)
     (0 'identity)
     (1 (car functions))

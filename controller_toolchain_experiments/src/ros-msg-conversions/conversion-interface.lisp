@@ -26,38 +26,8 @@
 ;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;; POSSIBILITY OF SUCH DAMAGE.
 
-(in-package :controller-experiments)
+(in-package :msg-conversions)
 
-(defgeneric add-associations (description &rest associations))
+(defgeneric to-msg (data msg-type))
 
-(defgeneric remove-associations (description &rest keys))
-
-(defgeneric find-association (description key))
-
-(defgeneric get-association (description key))
-
-(defgeneric contains-association-p (description key))
-
-(defgeneric get-keys (description))
-
-(defgeneric get-values (description))
-
-(defgeneric copy-description (description))
-
-(defun cherry-pick-associations (description &rest keys)
-  (apply #'remove-associations (copy-description description)
-         (remove-if (lambda (key) (member key keys)) (get-keys description))))
-
-(defun find-association-with-error (description key)
-  (multiple-value-bind (value key-present-p) 
-      (find-association description key)
-    (if key-present-p
-        (values value key-present-p)
-        (error "No key ~a in description ~a.~%" key description))))
- 
-(defun get-association-with-error (description key)
-  (multiple-value-bind (value key-present-p) 
-      (find-association description key)
-    (if key-present-p
-        value
-        (error "No key ~a in description ~a.~%" key description))))
+(defgeneric from-msg (msg))

@@ -26,38 +26,17 @@
 ;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;; POSSIBILITY OF SUCH DAMAGE.
 
-(in-package :controller-experiments)
-
-(defgeneric add-associations (description &rest associations))
-
-(defgeneric remove-associations (description &rest keys))
-
-(defgeneric find-association (description key))
-
-(defgeneric get-association (description key))
-
-(defgeneric contains-association-p (description key))
-
-(defgeneric get-keys (description))
-
-(defgeneric get-values (description))
-
-(defgeneric copy-description (description))
-
-(defun cherry-pick-associations (description &rest keys)
-  (apply #'remove-associations (copy-description description)
-         (remove-if (lambda (key) (member key keys)) (get-keys description))))
-
-(defun find-association-with-error (description key)
-  (multiple-value-bind (value key-present-p) 
-      (find-association description key)
-    (if key-present-p
-        (values value key-present-p)
-        (error "No key ~a in description ~a.~%" key description))))
- 
-(defun get-association-with-error (description key)
-  (multiple-value-bind (value key-present-p) 
-      (find-association description key)
-    (if key-present-p
-        value
-        (error "No key ~a in description ~a.~%" key description))))
+(defsystem ros-msg-conversions
+  :author "Georg Bartels <georg.bartels@cs.uni-bremen.de>"
+  :license "BSD"
+  :description "Common message conversions to interface with ROS."
+  :depends-on (roslisp std_msgs-msg sensor_msgs-msg cl-robot-models alexandria)
+  :components
+  ((:module "src"
+    :components
+    ((:module "ros-msg-conversions"
+      :components
+              ((:file "package")
+               (:file "conversion-interface" :depends-on ("package"))
+               (:file "sensor-msgs" :depends-on ("package" "conversion-interface"))
+               (:file "std-msgs" :depends-on ("package" "conversion-interface"))))))))
