@@ -39,4 +39,8 @@
               ((:file "package")
                (:file "conversion-interface" :depends-on ("package"))
                (:file "sensor-msgs" :depends-on ("package" "conversion-interface"))
-               (:file "std-msgs" :depends-on ("package" "conversion-interface"))))))))
+               (:file "std-msgs" :depends-on ("package" "conversion-interface"))
+               (:file "streaming-interface" :depends-on ("package" 
+                                                         "conversion-interface"
+                                                         "sensor-msgs"
+                                                         "std-msgs"))))))))

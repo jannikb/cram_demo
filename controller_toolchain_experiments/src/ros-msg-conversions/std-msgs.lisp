@@ -28,9 +28,13 @@
 
 (in-package :msg-conversions)
 
-(defmethod to-msg ((data number) msg-type)
+(defmethod to-msg ((data number) (msg-type (eql 'std_msgs-msg:float64)))
   (declare (ignore msg-type))
   (make-msg "std_msgs/Float64" :data data))
+
+(defmethod to-msg ((data string) (msg-type (eql 'std_msgs-msg:string)))
+  (declare (ignore msg-type))
+  (make-msg "std_msgs/String" :data data))
 
 (defmethod from-msg ((msg std_msgs-msg::float64))
   (with-fields (data) msg data))
