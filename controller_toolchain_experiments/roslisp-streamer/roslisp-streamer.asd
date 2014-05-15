@@ -30,7 +30,7 @@
   :author "Georg Bartels <georg.bartels@cs.uni-bremen.de>"
   :license "BSD"
   :description "A library helping to implement streaming applications in roslisp."
-  :depends-on (roslisp ros-msg-conversions)
+  :depends-on (roslisp roslisp-interfaces)
   :components
   ((:file "package")
    (:file "roslisp-streamer" :depends-on ("package"))))

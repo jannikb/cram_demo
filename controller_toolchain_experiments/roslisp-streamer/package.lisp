@@ -29,4 +29,4 @@
 (in-package :cl-user)
 
 (defpackage :roslisp-streamer
-  (:use #:roslisp #:msg-conversions))
+  (:use #:common-lisp #:roslisp #:roslisp-interfaces))
