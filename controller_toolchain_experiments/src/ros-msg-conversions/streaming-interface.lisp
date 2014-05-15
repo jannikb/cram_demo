@@ -51,18 +51,17 @@
 ;;;   A quick example:
 ;;;
 ;;;     (let ((in-descr
-;;;             (make-instance
-;;;              'ros-topic-description
+;;;             (make-ros-topic-description
 ;;;              :lisp-package "std_msgs-msg"
 ;;;              :msg-type "float64"
 ;;;              :topic "in_topic"))
 ;;;           (out-descr
-;;;             (make-instance
-;;;              'ros-topic-description
+;;;             (make-ros-topic-description
 ;;;              :lisp-package "std_msgs-msg"
 ;;;              :msg-type "string"
 ;;;              :topic "out_topic")))
-;;;       (defparameter *streamer* (make-ros-streamer in-descr out-descr #'prin1-to-string)))
+;;;       (defparameter *streamer* 
+;;;         (create-ros-streamer in-descr out-descr #'prin1-to-string)))
 ;;;
 ;;;     (start-ros-streamer *streamer*)
 ;;;     (ros-streamer-running-p *streamer*)
@@ -81,45 +80,47 @@
 ;;;       --> T
 ;;;     (cleanup-ros-streamer *streamer*)
 ;;;
-;;;     Now, all topics are down and *streamer* should be discarded.
+;;;     Now, all topics are down and *streamer* should be discarded:
+;;;       rostopic list
 ;;;
 
-(defclass ros-topic-description () 
-  ((lisp-package :initarg :lisp-package 
-                 :initform (error "Must supply :lisp-package in ros-topic-description.")
-                 :reader lisp-package :type string)
-   (msg-type :initarg :msg-type
-             :initform (error "Must supply :msg-type in ros-topic-description.")
-             :reader msg-type :type string)
-   (topic :initarg :topic
-          :initform (error "Must supply :topic in ros-topic-description.")
-          :reader topic :type string))
-  (:documentation "A class describing a ROS topic (from a LISP perspective)."))
+(defstruct ros-topic-description
+  "A class describing a ROS topic (from a LISP perspective)."
+  (lisp-package (error "Must supply :lisp-package in ros-topic-description.")
+   :read-only t :type string)
+  (msg-type (error "Must supply :msg-type in ros-topic-description.")
+   :read-only t :type string)
+  (topic (error "Must supply :topic in ros-topic-description.")
+   :read-only t :type string))
 
 (defun msg-type-symbol (topic-descr)
+  "Returns the symbol denoting the message type of `topic-descr'.
+ Assumes corresponding message conversions have been loaded."
   (declare (type ros-topic-description topic-descr))
   (with-slots (lisp-package msg-type) topic-descr
     (intern (string-upcase msg-type) (string-upcase lisp-package))))
 
 (defun advertise-publication (topic-descr)
+  "Advertises the topic as described in `topic-descr'. Assumes corresponding
+ message package and message conversions have been loaded."
   (declare (type ros-topic-description topic-descr))
   (with-slots (topic) topic-descr
     (values (advertise topic (msg-type-symbol topic-descr)) topic)))
            
-(defclass ros-streamer () 
-  ((callback :initarg :callback 
-             :initform (error "Must supply :callback in ros-streamer.")
-             :reader callback :type function)
-   (out-topic :initarg :out-topic
-              :initform (error "Must supply :out-topic in ros-streamer.")
-              :reader out-topic :type string)
-   (subscription-descr :initarg :subscription-descr
-                       :initform (error "Must supply :subscription-descr in ros-streamer.")
-                       :reader subscription-descr :type ros-topic-description)
-   (subscription :initform nil :accessor subscription :type subscriber))
-  (:documentation "Class holding all necessary data to setup a ROS streamer."))
-
-(defun make-ros-streamer (in-topic-descr out-topic-descr function)
+(defstruct ros-streamer
+  "Class holding all necessary data to setup a ROS streamer."
+  (callback (error "Must supply :callback in ros-streamer.")
+   :read-only t :type function)
+  (out-topic (error "Must supply :out-topic in ros-streamer.")
+   :read-only t :type string)
+  (subscription-descr (error "Must supply :subscription-descr in ros-streamer.")
+   :read-only t :type ros-topic-description)
+  (subscription nil :read-only nil))
+  
+(defun create-ros-streamer (in-topic-descr out-topic-descr function)
+  "Creates a ROS streamer with topic descriptions `in-topic-descr' and
+ `out-topic-descr'. `Function' denotes a function designator which is the
+ actual computation to be performed."
   (declare (type ros-topic-description in-topic-descr out-topic-descr)
            (type function function))
   (multiple-value-bind (publication out-topic) 
@@ -128,30 +129,37 @@
                       (publish publication
                                (to-msg (funcall function (from-msg msg))
                                        (msg-type-symbol out-topic-descr))))))
-      (make-instance 
-       'ros-streamer 
+      (make-ros-streamer
        :callback callback :out-topic out-topic :subscription-descr in-topic-descr))))
        
 (defun cleanup-ros-streamer (ros-streamer)
+  "Terminates all ROS connections of `ros-streamer.' NOTE: Renders `ros-streamer'
+ useless for any further communication. Should be discared afterwards."
   (declare (type ros-streamer ros-streamer))
   (when (ros-streamer-running-p ros-streamer)
     (stop-ros-streamer ros-streamer))
-  (unadvertise (out-topic ros-streamer)))
+  (unadvertise (ros-streamer-out-topic ros-streamer)))
 
 (defun ros-streamer-running-p (ros-streamer)
+  "Predicate to check whether `ros-streamer' has all communication set up
+ to stream data."
   (declare (type ros-streamer ros-streamer))
-  (not (not (subscription ros-streamer))))
+  (not (not (ros-streamer-subscription ros-streamer))))
 
 (defun start-ros-streamer (ros-streamer)
+  "Starts all communication of `ros-streamer'."
   (declare (type ros-streamer ros-streamer))
   (unless (ros-streamer-running-p ros-streamer)
     (with-slots (callback subscription-descr) ros-streamer
-      (setf (subscription ros-streamer)
+      (setf (ros-streamer-subscription ros-streamer)
             (subscribe 
-             (topic subscription-descr) (msg-type-symbol subscription-descr) callback)))))
+             (ros-topic-description-topic subscription-descr) 
+             (msg-type-symbol subscription-descr) callback)))))
            
 (defun stop-ros-streamer (ros-streamer)
+ "Stops all communication of `ros-streamer'."
   (declare (type ros-streamer ros-streamer))
   (when (ros-streamer-running-p ros-streamer)
-    (unsubscribe (subscription ros-streamer))
-    (setf (subscription ros-streamer) nil)))
+    (with-slots (subscription) ros-streamer
+      (unsubscribe subscription)
+      (setf subscription nil))))
