@@ -61,13 +61,16 @@
 ;;;              :msg-type "string"
 ;;;              :topic "out_topic")))
 ;;;       (defparameter *streamer* 
-;;;         (create-ros-streamer in-descr out-descr #'prin1-to-string)))
+;;;         (make-ros-streamer :in-topic-descr in-descr 
+;;;                            :out-topic-descr out-descr 
+;;;                            :function #'prin1-to-string)))
 ;;;
 ;;;     (start-ros-streamer *streamer*)
-;;;     (ros-streamer-running-p *streamer*)
+;;;     (ros-streamer-up-p *streamer*)
 ;;;       --> T
-;;;     Meanwhile, the stream is running, and one can analyse the setup from the
-;;;     console:
+;;;
+;;;     Meanwhile, the stream is running. One can analyse the setup from
+;;;     the console:
 ;;;       rostopic echo /out_topic
 ;;;       rostopic pub /in_topic std_msgs/Float64 "ata: 1.0}"
 ;;;
@@ -75,12 +78,7 @@
 ;;;     (ros-streamer-running-p *streamer*)
 ;;;       --> NIL
 ;;;
-;;;     (start-ros-streamer *streamer*)
-;;;     (ros-streamer-running-p *streamer*)
-;;;       --> T
-;;;     (cleanup-ros-streamer *streamer*)
-;;;
-;;;     Now, all topics are down and *streamer* should be discarded:
+;;;     Now, all topics are down:
 ;;;       rostopic list
 ;;;
 
@@ -95,71 +93,115 @@
 
 (defun msg-type-symbol (topic-descr)
   "Returns the symbol denoting the message type of `topic-descr'.
- Assumes corresponding message conversions have been loaded."
+ Assumes corresponding message packages have been loaded."
   (declare (type ros-topic-description topic-descr))
   (with-slots (lisp-package msg-type) topic-descr
     (intern (string-upcase msg-type) (string-upcase lisp-package))))
 
-(defun advertise-publication (topic-descr)
-  "Advertises the topic as described in `topic-descr'. Assumes corresponding
- message package and message conversions have been loaded."
+(defun advertise-topic (topic-descr)
+  "Publishes to `topic-descr'. Assumes corresponding message packages
+ have been loaded."
   (declare (type ros-topic-description topic-descr))
-  (with-slots (topic) topic-descr
-    (values (advertise topic (msg-type-symbol topic-descr)) topic)))
+  (advertise (ros-topic-description-topic topic-descr)
+             (msg-type-symbol topic-descr)))
+
+(defun subscribe-topic (topic-descr callback)
+  "Makes a subscription to `topic-descr' with `callback'. Assumes that
+ corresponding message packages have been loaded."
+  (subscribe
+   (ros-topic-description-topic topic-descr)
+   (msg-type-symbol topic-descr) callback))
            
 (defstruct ros-streamer
   "Class holding all necessary data to setup a ROS streamer."
-  (callback (error "Must supply :callback in ros-streamer.")
+  (function (error "Must supply :function in ros-streamer.")
    :read-only t :type function)
-  (out-topic (error "Must supply :out-topic in ros-streamer.")
-   :read-only t :type string)
-  (subscription-descr (error "Must supply :subscription-descr in ros-streamer.")
+  (in-topic-descr (error "Must supply :in-topic-descr in ros-streamer.")
    :read-only t :type ros-topic-description)
+  (out-topic-descr (error "Must supply :out-topic-descr in ros-streamer.")
+   :read-only t :type ros-topic-description)
+  (publication nil :read-only nil)
   (subscription nil :read-only nil))
   
-(defun create-ros-streamer (in-topic-descr out-topic-descr function)
-  "Creates a ROS streamer with topic descriptions `in-topic-descr' and
- `out-topic-descr'. `Function' denotes a function designator which is the
- actual computation to be performed."
-  (declare (type ros-topic-description in-topic-descr out-topic-descr)
-           (type function function))
-  (multiple-value-bind (publication out-topic) 
-      (advertise-publication out-topic-descr)
-    (let ((callback (lambda (msg)
-                      (publish publication
-                               (to-msg (funcall function (from-msg msg))
-                                       (msg-type-symbol out-topic-descr))))))
-      (make-ros-streamer
-       :callback callback :out-topic out-topic :subscription-descr in-topic-descr))))
-       
-(defun cleanup-ros-streamer (ros-streamer)
-  "Terminates all ROS connections of `ros-streamer.' NOTE: Renders `ros-streamer'
- useless for any further communication. Should be discared afterwards."
-  (declare (type ros-streamer ros-streamer))
-  (when (ros-streamer-running-p ros-streamer)
-    (stop-ros-streamer ros-streamer))
-  (unadvertise (ros-streamer-out-topic ros-streamer)))
+;;;
+;;; EXPORTED API
+;;;
 
-(defun ros-streamer-running-p (ros-streamer)
-  "Predicate to check whether `ros-streamer' has all communication set up
+(defun ros-streamer-up-p (ros-streamer)
+  "Predicate to check whether `ros-streamer' has all communication up
  to stream data."
   (declare (type ros-streamer ros-streamer))
-  (not (not (ros-streamer-subscription ros-streamer))))
+  (and (ros-streamer-out-up-p ros-streamer)
+       (ros-streamer-in-up-p ros-streamer)))
 
 (defun start-ros-streamer (ros-streamer)
   "Starts all communication of `ros-streamer'."
   (declare (type ros-streamer ros-streamer))
-  (unless (ros-streamer-running-p ros-streamer)
-    (with-slots (callback subscription-descr) ros-streamer
-      (setf (ros-streamer-subscription ros-streamer)
-            (subscribe 
-             (ros-topic-description-topic subscription-descr) 
-             (msg-type-symbol subscription-descr) callback)))))
-           
+  (start-out-communication ros-streamer)
+  (start-in-communication ros-streamer))
+
 (defun stop-ros-streamer (ros-streamer)
  "Stops all communication of `ros-streamer'."
   (declare (type ros-streamer ros-streamer))
-  (when (ros-streamer-running-p ros-streamer)
+  (stop-in-communication ros-streamer)
+  (stop-out-communication ros-streamer))
+
+;;;
+;;; INTERNAL API
+;;;
+
+(defun ros-streamer-out-up-p (ros-streamer)
+  "Predicate to check whether the publisher of `ros-streamer' has
+ been advertised."
+  (declare (type ros-streamer ros-streamer))
+  (not (not (ros-streamer-publication ros-streamer))))
+
+(defun ros-streamer-in-up-p (ros-streamer)
+  "Predicate to check whether the subscription of `ros-streamer'
+ has been established."
+  (declare (type ros-streamer ros-streamer))
+  (not (not (ros-streamer-subscription ros-streamer))))
+
+(defun start-out-communication (ros-streamer)
+  "Starts the publisher of `ros-streamer'. If it is already
+ running, then nothing happens."
+  (declare (type ros-streamer ros-streamer))
+  (unless (ros-streamer-out-up-p ros-streamer)
+    (with-slots (publication out-topic-descr) ros-streamer
+      (setf publication (advertise-topic out-topic-descr)))))
+
+(defun start-in-communication (ros-streamer)
+  "Starts the subscription of `ros-streamer'. If the subscription
+ was already up, nothing happens. Note: Assumes that the publisher
+ is already running. Also assumes that the corresponding message
+ conversion packages have been loaded."
+  (declare (type ros-streamer ros-streamer))
+  (unless (ros-streamer-in-up-p ros-streamer)
+    (when (ros-streamer-out-up-p ros-streamer) ; TODO(Georg): make this an error
+      (with-slots (in-topic-descr out-topic-descr
+                   subscription publication function) ros-streamer
+        (setf subscription (subscribe-topic 
+                            in-topic-descr
+                            (lambda (msg)
+                              (publish publication
+                                       (to-msg (funcall function (from-msg msg))
+                                               (msg-type-symbol out-topic-descr))))))))))
+        
+(defun stop-in-communication (ros-streamer)
+  "Stops the subscription of `ros-streamer', if necessary."
+  (declare (type ros-streamer ros-streamer))
+  (when (ros-streamer-in-up-p ros-streamer)
     (with-slots (subscription) ros-streamer
       (unsubscribe subscription)
       (setf subscription nil))))
+
+(defun stop-out-communication (ros-streamer)
+  "Stops the publisher of `ros-streamer', if necessary.
+ Note: Assume that the subscription of `ros-streamer' is already
+ done."
+  (declare (type ros-streamer ros-streamer))
+  (when (ros-streamer-out-up-p ros-streamer)
+    (unless (ros-streamer-in-up-p ros-streamer) ; TODO(Georg): make this an error
+      (with-slots (publication out-topic-descr) ros-streamer
+        (unadvertise (ros-topic-description-topic out-topic-descr))
+        (setf publication nil)))))
