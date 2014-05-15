@@ -146,6 +146,8 @@
   (stop-in-communication ros-streamer)
   (stop-out-communication ros-streamer))
 
+(define-condition ros-streamer-error (simple-error) ())
+
 ;;;
 ;;; INTERNAL API
 ;;;
@@ -176,16 +178,20 @@
  is already running. Also assumes that the corresponding message
  conversion packages have been loaded."
   (declare (type ros-streamer ros-streamer))
+  (unless (ros-streamer-out-up-p ros-streamer)
+    (error 
+     'ros-streamer
+     :format-control "Out-comm of ROS-streamer not running when starting in-comm: ~a."
+     :format-arguments (list ros-streamer)))
   (unless (ros-streamer-in-up-p ros-streamer)
-    (when (ros-streamer-out-up-p ros-streamer) ; TODO(Georg): make this an error
-      (with-slots (in-topic-descr out-topic-descr
-                   subscription publication function) ros-streamer
-        (setf subscription (subscribe-topic 
-                            in-topic-descr
-                            (lambda (msg)
-                              (publish publication
-                                       (to-msg (funcall function (from-msg msg))
-                                               (msg-type-symbol out-topic-descr))))))))))
+    (with-slots (in-topic-descr out-topic-descr
+                 subscription publication function) ros-streamer
+      (setf subscription (subscribe-topic 
+                          in-topic-descr
+                          (lambda (msg)
+                            (publish publication
+                                     (to-msg (funcall function (from-msg msg))
+                                             (msg-type-symbol out-topic-descr)))))))))
         
 (defun stop-in-communication (ros-streamer)
   "Stops the subscription of `ros-streamer', if necessary."
@@ -200,8 +206,12 @@
  Note: Assume that the subscription of `ros-streamer' is already
  done."
   (declare (type ros-streamer ros-streamer))
+  (when (ros-streamer-in-up-p ros-streamer)
+    (error 
+     'ros-streamer
+     :format-controller "In-comm of ROS-streamer still running when stopping out-comm: ~a"
+     :format-arguments (list ros-streamer)))
   (when (ros-streamer-out-up-p ros-streamer)
-    (unless (ros-streamer-in-up-p ros-streamer) ; TODO(Georg): make this an error
-      (with-slots (publication out-topic-descr) ros-streamer
-        (unadvertise (ros-topic-description-topic out-topic-descr))
-        (setf publication nil)))))
+    (with-slots (publication out-topic-descr) ros-streamer
+      (unadvertise (ros-topic-description-topic out-topic-descr))
+      (setf publication nil))))
