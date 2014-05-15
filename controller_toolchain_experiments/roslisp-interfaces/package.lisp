@@ -26,21 +26,8 @@
 ;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;; POSSIBILITY OF SUCH DAMAGE.
 
-(defsystem ros-msg-conversions
-  :author "Georg Bartels <georg.bartels@cs.uni-bremen.de>"
-  :license "BSD"
-  :description "Common message conversions to interface with ROS."
-  :depends-on (roslisp std_msgs-msg sensor_msgs-msg cl-robot-models alexandria)
-  :components
-  ((:module "src"
-    :components
-    ((:module "ros-msg-conversions"
-      :components
-              ((:file "package")
-               (:file "conversion-interface" :depends-on ("package"))
-               (:file "sensor-msgs" :depends-on ("package" "conversion-interface"))
-               (:file "std-msgs" :depends-on ("package" "conversion-interface"))
-               (:file "streaming-interface" :depends-on ("package" 
-                                                         "conversion-interface"
-                                                         "sensor-msgs"
-                                                         "std-msgs"))))))))
+(in-package :cl-user)
+
+(defpackage :roslisp-interfaces
+  (:use #:common-lisp)
+  (:export to-msg from-msg))

@@ -26,8 +26,11 @@
 ;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;; POSSIBILITY OF SUCH DAMAGE.
 
-(in-package :msg-conversions)
-
-(defgeneric to-msg (data msg-type))
-
-(defgeneric from-msg (msg))
+(defsystem roslisp-interfaces
+  :author "Georg Bartels <georg.bartels@cs.uni-bremen.de>"
+  :license "BSD"
+  :description "Commonly used interfaces for working with ROSLISP."
+  :depends-on ()
+  :components
+  ((:file "package")
+   (:file "message-conversion" :depends-on ("package"))))
