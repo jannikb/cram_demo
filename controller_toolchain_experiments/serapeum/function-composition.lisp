@@ -26,7 +26,7 @@
 ;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;; POSSIBILITY OF SUCH DAMAGE.
 
-(in-package :controller-experiments)
+(in-package :serapeum)
 
 (defmacro compose (&rest functions) 
   "Takes a sequence of symbols denoting functions in `functions' and

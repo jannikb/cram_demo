@@ -26,7 +26,7 @@
 ;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;; POSSIBILITY OF SUCH DAMAGE.
 
-(in-package :controller-experiments)
+(in-package :serapeum)
 
 (defmethod add-associations ((description hash-table) &rest rest)
   (when (/= (rem (length rest) 2) 0)
