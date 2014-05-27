@@ -26,15 +26,16 @@
 ;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;; POSSIBILITY OF SUCH DAMAGE.
 
-(in-package :controller-experiments)
-
-(defmethod to-msg ((data number) (msg-type (eql 'std_msgs-msg:float64)))
-  (declare (ignore msg-type))
-  (make-msg "std_msgs/Float64" :data data))
-
-(defmethod to-msg ((data string) (msg-type (eql 'std_msgs-msg:string)))
-  (declare (ignore msg-type))
-  (make-msg "std_msgs/String" :data data))
-
-(defmethod from-msg ((msg std_msgs-msg::float64))
-  (with-fields (data) msg data))
+(defsystem roslisp-msg-conversions
+  :author "Georg Bartels <georg.bartels@cs.uni-bremen.de>"
+  :license "BSD"
+  :description "Message conversions methods for working with ROSLISP."
+  :depends-on (roslisp 
+               roslisp-interfaces 
+               std_msgs-msg 
+               sensor_msgs-msg 
+               cl-robot-models alexandria)
+  :components
+  ((:file "package")
+   (:file "sensor-msgs" :depends-on ("package"))
+   (:file "std-msgs" :depends-on ("package"))))

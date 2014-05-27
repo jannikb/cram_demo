@@ -26,33 +26,15 @@
 ;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;; POSSIBILITY OF SUCH DAMAGE.
 
-(in-package :controller-experiments)
+(in-package :msg-conversions)
 
-(defmethod roslisp-interfaces:to-msg ((data hash-table) (msg-type (eql 'sensor_msgs-msg:jointstate)))
-  (let ((names '()) (positions '()) (velocities '()) (efforts '()))
-    (alexandria:maphash-values 
-     (lambda (joint-state)
-       (with-slots (joint-name joint-position joint-velocity joint-effort) joint-state
-         (push joint-name names)
-         (push joint-position positions)
-         (push joint-velocity velocities)
-         (push joint-effort efforts)))
-     data)
-    (make-msg "sensor_msgs/jointstate" 
-              (:stamp :header) (ros-time)
-              :name (coerce (reverse names) 'vector)
-              :position (coerce (reverse positions) 'vector)
-              :velocity (coerce (reverse velocities) 'vector)
-              :effort (coerce (reverse efforts) 'vector))))
-              
-(defmethod roslisp-interfaces:from-msg ((msg sensor_msgs-msg:jointstate))
-  (let ((joint-states (make-hash-table :test 'equal)))
-    (with-fields (name position velocity effort) msg
-        (loop for index to (1- (length name)) do
-          (setf (gethash (aref name index) joint-states)
-                (cl-robot-models:make-joint-state
-                 :joint-name (aref name index)
-                 :joint-position (aref position index)
-                 :joint-velocity (aref velocity index)
-                 :joint-effort (aref effort index)))))
-    joint-states))
+(defmethod roslisp-interfaces:to-msg ((data number) (msg-type (eql 'std_msgs-msg:float64)))
+  (declare (ignore msg-type))
+  (make-msg "std_msgs/Float64" :data data))
+
+(defmethod roslisp-interfaces:to-msg ((data string) (msg-type (eql 'std_msgs-msg:string)))
+  (declare (ignore msg-type))
+  (make-msg "std_msgs/String" :data data))
+
+(defmethod roslisp-interfaces:from-msg ((msg std_msgs-msg::float64))
+  (with-fields (data) msg data))
