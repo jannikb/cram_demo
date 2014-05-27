@@ -35,13 +35,13 @@
   (cl-robot-controllers 
    cl-robot-models
    roslisp
-   roslisp-interfaces 
+   roslisp-interfaces
+   roslisp-streamer
+   roslisp-msg-conversions
+   alexandria
    serapeum 
-   cl-utilities
-   sensor_msgs-msg
-   std_msgs-msg)
+   cl-utilities)
   :components
   ((:file "package")
-   (:file "sensor-msgs" :depends-on ("package"))
-   (:file "std-msgs" :depends-on ("package"))
-   (:file "instantiate-descriptions" :depends-on ("package" "sensor-msgs" "std-msgs"))))
+   (:file "experimental-code" :depends-on ("package"))
+   (:file "instantiate-descriptions" :depends-on ("package"))))
