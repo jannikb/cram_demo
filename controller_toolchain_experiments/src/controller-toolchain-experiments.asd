@@ -40,7 +40,9 @@
    roslisp-msg-conversions
    alexandria
    serapeum 
-   cl-utilities)
+   cl-utilities
+   cl-yaml
+   visualization_msgs-msg)
   :components
   ((:file "package")
    (:file "experimental-code" :depends-on ("package"))
