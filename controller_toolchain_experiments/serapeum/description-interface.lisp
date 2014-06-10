@@ -61,3 +61,8 @@
     (if key-present-p
         value
         (error "No key ~a in description ~a.~%" key description))))
+
+(defun get-in-association (description keys)
+  "Returns the association inside a nested `description', by using the sequence
+ of `keys' to make the actual lookup."
+  (reduce #'get-association keys :initial-value description))
