@@ -44,4 +44,5 @@
   :components
   ((:file "package")
    (:file "experimental-code" :depends-on ("package"))
-   (:file "instantiate-descriptions" :depends-on ("package"))))
+   (:file "instantiate-descriptions" :depends-on ("package"))
+   (:file "pr2-fingertip-sensors" :depends-on ("package"))))
