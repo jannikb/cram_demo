@@ -42,7 +42,7 @@
   (concatenate 
    'list
    (calc-upper-sensor-polygon center halfside1 halfside2)
-   (calc-lower-sensor-polygon center halfside2 halfside2)))
+   (calc-lower-sensor-polygon center halfside1 halfside2)))
                
 (defun calc-upper-sensor-polygon (center halfside1 halfside2)
   (list
