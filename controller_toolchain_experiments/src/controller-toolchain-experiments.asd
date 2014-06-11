@@ -34,6 +34,7 @@
   :depends-on 
   (cl-robot-controllers 
    cl-robot-models
+   cl-transforms
    roslisp
    roslisp-interfaces
    roslisp-streamer
