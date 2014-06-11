@@ -29,6 +29,143 @@
 (in-package :controller-experiments)
 
 ;;;
+;;; PRESSURE SENSOR DESCRIPTION PROCESSING
+;;;
+
+(defun calc-sensor-normal (halfside1 halfside2 normal-length)
+  (cl-transforms:v*
+   (cl-transforms::normalize-axis
+    (cl-transforms:cross-product halfside1 halfside2))
+   normal-length))
+
+(defun calc-sensor-surface-polygons (center halfside1 halfside2)
+  (concatenate 
+   'list
+   (calc-upper-sensor-polygon center halfside1 halfside2)
+   (calc-lower-sensor-polygon center halfside2 halfside2)))
+               
+(defun calc-upper-sensor-polygon (center halfside1 halfside2)
+  (list
+   (upper-right-corner center halfside1 halfside2)
+   (lower-right-corner center halfside1 halfside2)
+   (lower-left-corner center halfside1 halfside2)))
+
+(defun calc-lower-sensor-polygon (center halfside1 halfside2)
+  (list
+   (lower-left-corner center halfside1 halfside2)
+   (upper-left-corner center halfside1 halfside2)
+   (upper-right-corner center halfside1 halfside2)))
+
+(defun calc-sensor-corner (center halfside1 halfside2 add-1-p add-2-p)
+  (let ((fun1 (if add-1-p
+                  #'cl-transforms:v+
+                  #'cl-transforms:v-))
+        (fun2 (if add-2-p
+                  #'cl-transforms:v+
+                  #'cl-transforms:v-)))
+    (funcall fun1 (funcall fun2 center halfside1) halfside2)))
+
+(defun upper-right-corner (center halfside1 halfside2)
+  (calc-sensor-corner center halfside1 halfside2 t t))
+
+(defun lower-right-corner (center halfside1 halfside2)
+  (calc-sensor-corner center halfside1 halfside2 nil t))
+
+(defun lower-left-corner (center halfside1 halfside2)
+  (calc-sensor-corner center halfside1 halfside2 nil nil))
+
+(defun upper-left-corner (center halfside1 halfside2)
+  (calc-sensor-corner center halfside1 halfside2 t nil))
+
+;;;
+;;; RVIZ VISUALIZATION OF PR2 FINGERTIP
+;;; PRESSURE SENSORS DESCRIPTION FROM YAML-FILE
+;;;
+
+(defparameter *marker-topic*
+  "/visualization_marker")
+
+(defun visualization-publisher (&optional (topic *marker-topic*))
+  (roslisp:advertise topic "visualization_msgs/Marker"))
+
+(defun visualize-pr2-gripper-sensor-yaml (directory filename)
+  (mapcar #'visualize-gripper-sensor-descriptions
+          (get-values (read-pressure-sensor-descriptions directory filename))))
+
+(defun visualize-gripper-sensor-descriptions (gripper-descr)
+  (mapcar #'visualize-finger-sensor-descriptions (get-values gripper-descr)))
+
+(defun visualize-finger-sensor-descriptions (finger-descr)
+  (maphash #'visualize-sensor-description finger-descr))
+
+(defun visualize-sensor-description (sensor-name sensor-descr)
+  (roslisp:publish 
+   (visualization-publisher)
+   (make-sensor-descr-normal-vis-msg sensor-name sensor-descr))
+  (roslisp:publish 
+   (visualization-publisher)
+   (make-sensor-descr-surface-vis-msg sensor-name sensor-descr)))
+
+(defun marker-red ()
+  (roslisp:make-message
+   "std_msgs/colorrgba"
+   :r 1.0
+   :a 1.0))
+
+(defun 3d-vector->msg (vec)
+  (with-slots ((x cl-transforms:x) (y cl-transforms:y) (z cl-transforms:z)) vec
+    (roslisp:make-message "geometry_msgs/vector3" :x x :y y :z z)))
+
+(defun make-sensor-descr-normal-vis-msg (sensor-name sensor-descr)
+  (let* ((normal-length 0.02)
+         (marker-width 0.002)
+         (marker-arrow-width 0.005)
+         (center (get-association-with-error sensor-descr "center"))
+         (halfside1 (get-association-with-error sensor-descr "halfside1"))
+         (halfside2 (get-association-with-error sensor-descr "halfside2"))
+         (frame-id (get-association-with-error sensor-descr "frame_id")))
+    (roslisp:make-msg
+     "visualization_msgs/Marker"
+     (stamp header) (roslisp:ros-time)
+     (frame_id header) frame-id
+     (ns) sensor-name
+     (type) (roslisp-msg-protocol:symbol-code 'visualization_msgs-msg:marker :arrow)
+     (action) (roslisp-msg-protocol:symbol-code 'visualization_msgs-msg:marker :add)
+     (points) (coerce (mapcar #'3d-vector->msg
+                              (list center
+                                    (cl-transforms:v+ 
+                                     center
+                                     (calc-sensor-normal halfside1 halfside2 normal-length))))
+                      'vector)
+     (color) (marker-red)
+     (x scale) marker-width
+     (y scale) marker-arrow-width
+     (frame_locked) t)))
+
+(defun make-sensor-descr-surface-vis-msg (sensor-name sensor-descr)
+  (roslisp:make-msg
+   "visualization_msgs/Marker"
+   (stamp header) (roslisp:ros-time)
+   (frame_id header) (get-association-with-error sensor-descr "frame_id")
+   (id) 1
+   (ns) sensor-name
+   (type) (roslisp-msg-protocol:symbol-code 'visualization_msgs-msg:marker :triangle_list)
+   (action) (roslisp-msg-protocol:symbol-code 'visualization_msgs-msg:marker :add)
+   (w orientation pose) 1.0
+   (points) (coerce 
+             (mapcar #'3d-vector->msg
+                     (calc-sensor-surface-polygons 
+                      (get-association-with-error sensor-descr "center")
+                      (get-association-with-error sensor-descr "halfside1")
+                      (get-association-with-error sensor-descr "halfside2")))
+             'vector)
+   (colors) (coerce (loop for i from 0 to 5 collect (marker-red)) 'vector)
+   (x scale) 1
+   (y scale) 1
+   (z scale) 1
+   (frame_locked) t))
+
+;;;
 ;;; READING IN YAML DESCRIPTION OF PR2 FINGERTIP
 ;;; PRESSURE SENSORS
 ;;;
