@@ -72,7 +72,7 @@
           (sqrt (+ (sq xd) (sq yd) (sq zd))))))))
 
 (defun add-to-buffer (buffer new-elem)
-  (when (> (length buffer) 20) (setf buffer (butlast buffer)))
+  (when (> (length buffer) 6) (setf buffer (butlast buffer)))
   (push new-elem buffer))
 
 (defun line-fitting-3d (buffer)
@@ -94,6 +94,8 @@
                                       (second z-fitted))))
       (list (make-3d-vector (car (last x-buffer)) (car (last y-buffer)) (car (last z-buffer)))
             (normalize-vector rotation)
+            (abs (cl-transforms:v-dist (point32->3d-vector (first buffer)) 
+                                       (point32->3d-vector (car (last buffer)))))
             (+ (third x-fitted) (third y-fitted) (third z-fitted))))))
 
 (defun line-fitting-2d (values)
@@ -112,7 +114,7 @@
 
 (defun show-direction (3d-fitting id)
   (let ((origin (first 3d-fitting))
-        (direction (cl-transforms:v* (second 3d-fitting) 0.5)))
+        (direction (cl-transforms:v* (second 3d-fitting) (+ 0.1 (* 2 (third 3d-fitting))))))
     (publish-visualization-marker (cl-tf:make-pose-stamped "/shoulder_kinect_rgb_frame" 
                                                            (ros-time) 
                                                            (cl-transforms:make-identity-vector)
@@ -135,3 +137,20 @@
 
 (defun sq (value)
   (* value value))
+
+(defun distance-to-ray (origin direction point)
+  (let ((a-p (cl-transforms:v- origin point))
+        (n (cl-transforms:v- origin direction)))
+    (cl-transforms:v- a-p (cl-transforms:v* n (cl-transforms:dot-product a-p n)))))
+
+(defun point32->3d-vector (msg)
+  (with-fields ((x0 x) (y0 y) (z0 z)) msg
+    (make-3d-vector x0 y0 z0)))
+      
+(defun is-behind-ray (origin direction point)
+  (let ((v1 direction)
+        (v2 (cl-transforms:v- point origin)))
+    (> 0
+       (/ (cl-transforms:dot-product v1 v2) 
+          (* (cl-transforms:v-norm v1) (cl-transforms:v-norm v2))))))
+
