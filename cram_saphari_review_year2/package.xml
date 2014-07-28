@@ -17,7 +17,6 @@
   <build_depend>cram_language</build_depend>
   <build_depend>cram_reasoning</build_depend>
   <build_depend>cram_designators</build_depend>
-  <build_depend>cram_beasty</build_depend>
   <build_depend>roslisp</build_depend>
   <build_depend>roslisp_utilities</build_depend>
   <build_depend>saphari_msgs</build_depend>
@@ -26,14 +25,10 @@
   <build_depend>cl_3d_shapes</build_depend>
   <build_depend>cl_transforms</build_depend>
   <build_depend>cl_tf</build_depend>
-  <build_depend>cram_ptu</build_depend>
-  <build_depend>cram_ik_proxy</build_depend>
-  <build_depend>cram_wsg50</build_depend>
 
   <run_depend>cram_language</run_depend>
   <run_depend>cram_reasoning</run_depend>
   <run_depend>cram_designators</run_depend>
-  <run_depend>cram_beasty</run_depend>
   <run_depend>roslisp</run_depend>
   <run_depend>roslisp_utilities</run_depend>
   <run_depend>saphari_msgs</run_depend>
@@ -42,7 +37,5 @@
   <run_depend>cl_3d_shapes</run_depend>
   <run_depend>cl_transforms</run_depend>
   <run_depend>cl_tf</run_depend>
-  <run_depend>cram_ptu</run_depend>
-  <run_depend>cram_ik_proxy</run_depend>
-  <run_depend>cram_wsg50</run_depend>
+
 </package>
