@@ -92,6 +92,7 @@
              (push equip-dists *bodypart-equipment-distances*)
              (push body-key *bodypart-equipment-distances*)))
 
+  ;; fluent for the direction a bodypart is moving in
   (loop for (key value) on *bodypart-positions* by #'cddr
         do (let ((buffer (make-fluent)))
              (setf *point-buffer* 
@@ -124,13 +125,42 @@
   (unsubscribe *sub-human*)
   (unsubscribe *sub-equipment*))
 
- 
-
 (defun set-fluents (plist msg get-part-fn msg-type)
   (loop for (key value) on plist by #'cddr
         do (let ((part (funcall get-part-fn msg (symbol-code msg-type key))))
              (when part
                (setf (value (getf plist key)) part)))))
+
+#|
+(defun get-target-equipment (bodypart)
+  "Returns a fluent with a list of equipments. The equipments are sorted by the propability
+   of being the equipment the bodypart is moving to."
+  (let ((bp-fl (getf *bodypart-directions* bodypart))
+        (eq-fls nil)
+    (loop for (key value) on *equipment-positions* by #'cddr
+          do (acons key
+                    (fl-funcall (lambda (fit equip)
+                                  (unless (is-behind-ray (first fit) (second fit) equip)
+                                    (cl-transforms:v-norm (distance-to-ray (first fit) 
+                                                                           (second fit) 
+                                                                           equip))))
+                                bp-fl value)
+                    eq-fls))
+    (fl-sort eq-fls))))
+
+(defun sort-equips (&rest equips)
+  (sort equips #'< :key #'cdr))
+
+(defmacro fl-sort (equips)
+  `(fl-funcall #'sort-equips ,@equips))
+|#
+
+
+  
+  
+
+
+    
 
 
 

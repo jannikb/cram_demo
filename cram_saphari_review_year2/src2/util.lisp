@@ -85,7 +85,6 @@
                 (push y0 y-buffer)
                 (push z0 z-buffer)))
             buffer)
-;    (format t "x-b ~a~%y-b ~a~%z-b ~a~%" x-buffer y-buffer z-buffer)
     (let* ((x-fitted (line-fitting-2d x-buffer))
            (y-fitted (line-fitting-2d y-buffer))
            (z-fitted (line-fitting-2d z-buffer))
@@ -154,3 +153,37 @@
        (/ (cl-transforms:dot-product v1 v2) 
           (* (cl-transforms:v-norm v1) (cl-transforms:v-norm v2))))))
 
+(defun msg->equipment-position-fl (msg equips-fl)
+  (let ((equips nil)
+        (old-equips (value equips-fl)))
+    (with-fields (perceived) msg
+      (loop for equip across perceived
+            do (with-fields (pose id) equip
+                 (setf equips
+                       (acons (car (rassoc id (symbol-codes 'saphari_msgs-msg:equipment)))
+                              (cl-transforms:origin 
+                               (cl-transforms:transform-pose *head-kinect-transform* 
+                                                             (cl-tf:msg->pose-stamped pose)))
+                              equips)))))
+    (loop for old-equip in old-equips
+          do (unless (assoc (car old-equip) equips)
+               (push old-equip equips)))
+    (setf (value equips-fl) equips)))
+
+(defun sort-equips (equips fit)
+  (let ((equips-dist nil))
+    (loop for equip in equips
+          do (setf equips-dist 
+                   (acons (car equip)
+                          (unless (is-behind-ray (first fit) (second fit) (cdr equip))
+                            (cl-transforms:v-norm (distance-to-ray (first fit) 
+                                                                   (second fit) 
+                                                                   (cdr equip))))
+                          equips-dist)))
+    (sort equips-dist (lambda (x1 x2) 
+                        (when x1 
+                          (if x2
+                              (< x1 x2)
+                              t)))
+          :key #'cdr)))
+               
