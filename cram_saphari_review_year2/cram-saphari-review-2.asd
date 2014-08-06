@@ -25,6 +25,8 @@
   ((:module "src2"
             :components
             ((:file "package")
+             (:file "msg-parser" :depends-on ("package"))
              (:file "util" :depends-on ("package"))
-             (:file "fluents" :depends-on ("package" "util"))
-             (:file "visualization" :depends-on ("package" "util" "fluents"))))))
+             (:file "direction" :depends-on ("package" "util"))
+             (:file "fluents" :depends-on ("package" "util" "msg-parser"))
+             (:file "visualization" :depends-on ("package" "util" "fluents" "direction"))))))

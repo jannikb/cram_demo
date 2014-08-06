@@ -32,7 +32,7 @@
 
 (defparameter *head-kinect-transform* nil)
 
-(defun init2 ()
+(defun save-head-shoulder-transform ()
   (unless *tf* (setf *tf* (make-instance 'cl-tf:transform-listener)))
   (cl-tf:wait-for-transform *tf* 
                             :source-frame "/head_xtion_rgb_optical_frame" 
@@ -41,149 +41,57 @@
                                                          :source-frame "/head_xtion_rgb_optical_frame" 
                                                          :target-frame "/shoulder_kinect_rgb_frame")))
 
-(defun get-bodypart-with-label (human bodypart-label)
-  (with-fields (bodyparts) human
-    (find bodypart-label bodyparts 
-          :key (lambda (part) (roslisp:with-fields (label) part label)))))
+(defun get-body-part (body body-part-label)
+  "Returns the body part from the `body' with the to `body-part-label' associated id."
+  (find body-part-label (body-parts body) :key #'label))
 
-(defun get-bodypart-position (bodypart)
-  (when bodypart
-    (with-fields (centroid) bodypart
-      centroid)))
+(defun 3d-vector->list (3d-vector)
+  "Converts the `3d-vector' into a list of numbers."
+  (list (x 3d-vector) (y 3d-vector) (z 3d-vector)))
 
-(defun get-equipment-position (equipment)
-  (when equipment
-    (with-fields (pose) equipment
-      (cl-transforms:origin (cl-transforms:transform-pose *head-kinect-transform* 
-                                                          (cl-tf:msg->pose-stamped pose))))))
+(defun list->3d-vector (list)
+  "Expects a list of three numbers and converts it into a 3d-vector."
+  (assert (= (length list) 3))
+  (apply #'make-3d-vector list))
 
-(defun get-equipment-with-label (equipments equipment-label)
-  (with-fields (perceived) equipments
-    (find equipment-label perceived
-          :key (lambda (equipment) (roslisp:with-fields (id) equipment id)))))
+(defun make-buffer-fluent (fluent max-length)
+  "Returns a fluent that contains a list with the `max-length' last states of `fluent'."
+  (let ((buffer nil))
+    (fl-funcall (lambda (fl)
+                  (if (< (length (value buffer)) max-length)
+                      (setf buffer (append buffer (list (value fl))))
+                      (setf buffer (append (cdr buffer) (list (value fl))))))
+                fluent)))
 
-(defun dist (point1 point2)
-  (when (and point1 point2)
-    (with-fields ((x1 x) (y1 y) (z1 z)) point1
-      (with-fields ((x2 x) (y2 y) (z2 z)) point2
-        (let ((xd (- x2 x1))
-              (yd (- y2 y1))
-              (zd (- z2 z1)))
-          (sqrt (+ (sq xd) (sq yd) (sq zd))))))))
+(defun distance-to-ray (ray point)
+  "Returns the distance from the `point' to the line represented by `ray'."
+  (let ((a-p (cl-transforms:v- (origin ray) point))
+        (n (cl-transforms:v- (origin ray) (direction ray))))
+    (cl-transforms:v-norm (cl-transforms:v- a-p (cl-transforms:v* n (cl-transforms:dot-product a-p n))))))
 
-(defun add-to-buffer (buffer new-elem)
-  (when (> (length buffer) 6) (setf buffer (butlast buffer)))
-  (push new-elem buffer))
-
-(defun line-fitting-3d (buffer)
-  (let ((x-buffer nil)
-        (y-buffer nil)
-        (z-buffer nil))
-    (mapcar (lambda (point) 
-              (with-fields ((x0 x) (y0 y) (z0 z)) point
-                (push x0 x-buffer)
-                (push y0 y-buffer)
-                (push z0 z-buffer)))
-            buffer)
-    (let* ((x-fitted (line-fitting-2d x-buffer))
-           (y-fitted (line-fitting-2d y-buffer))
-           (z-fitted (line-fitting-2d z-buffer))
-           (rotation  (make-3d-vector (second x-fitted) 
-                                      (second y-fitted) 
-                                      (second z-fitted))))
-      (list (make-3d-vector (car (last x-buffer)) (car (last y-buffer)) (car (last z-buffer)))
-            (normalize-vector rotation)
-            (abs (cl-transforms:v-dist (point32->3d-vector (first buffer)) 
-                                       (point32->3d-vector (car (last buffer)))))
-            (+ (third x-fitted) (third y-fitted) (third z-fitted))))))
-
-(defun line-fitting-2d (values)
-  (let ((numbers nil))
-    (loop for i from 0.0d0 to (1- (length values))
-          do (push i numbers))
-    (multiple-value-bind (c0 c1 cov00 cov01 cov11 err)
-        (gsll:linear-fit (grid:make-foreign-array 'double-float 
-                                                  :dimensions (length values)
-                                                  :initial-contents (reverse numbers))
-                         (grid:make-foreign-array 'double-float 
-                                                  :dimensions (length values)
-                                                  :initial-contents values))
-      (declare (ignore cov00 cov01 cov11))
-      (list c0 c1 err))))
-
-(defun show-direction (3d-fitting id)
-  (let ((origin (first 3d-fitting))
-        (direction (cl-transforms:v* (second 3d-fitting) (+ 0.1 (* 2 (third 3d-fitting))))))
-    (publish-visualization-marker (cl-tf:make-pose-stamped "/shoulder_kinect_rgb_frame" 
-                                                           (ros-time) 
-                                                           (cl-transforms:make-identity-vector)
-                                                           (cl-transforms:make-identity-rotation)) 
-                                  :points (vector (cl-tf:point->msg origin)
-                                                  (cl-tf:point->msg (make-3d-vector (+ (x origin)
-                                                                                       (x direction))
-                                                                                    (+ (y origin)
-                                                                                       (y direction))
-                                                                                    (+ (z origin)
-                                                                                       (z direction)))))
-                                  :scale-x 0.05 :scale-y 0.1
-                                  :id id)))
-
-(defun normalize-vector (vector)
-  (let ((length (sqrt (+ (sq (x vector)) (sq (y vector)) (sq (z vector))))))
-    (make-3d-vector (/ (x vector) length)
-                    (/ (y vector) length)
-                    (/ (z vector) length))))
-
-(defun sq (value)
-  (* value value))
-
-(defun distance-to-ray (origin direction point)
-  (let ((a-p (cl-transforms:v- origin point))
-        (n (cl-transforms:v- origin direction)))
-    (cl-transforms:v- a-p (cl-transforms:v* n (cl-transforms:dot-product a-p n)))))
-
-(defun point32->3d-vector (msg)
-  (with-fields ((x0 x) (y0 y) (z0 z)) msg
-    (make-3d-vector x0 y0 z0)))
-      
-(defun is-behind-ray (origin direction point)
-  (let ((v1 direction)
-        (v2 (cl-transforms:v- point origin)))
+(defun is-behind-ray (ray point)
+  "Returns nil if the `point' lays behind the plane created by the origin and direction of the `ray'."
+  (let ((v1 (direction ray))
+        (v2 (cl-transforms:v- point (origin ray))))
     (> 0
        (/ (cl-transforms:dot-product v1 v2) 
           (* (cl-transforms:v-norm v1) (cl-transforms:v-norm v2))))))
 
-(defun msg->equipment-position-fl (msg equips-fl)
-  (let ((equips nil)
-        (old-equips (value equips-fl)))
-    (with-fields (perceived) msg
-      (loop for equip across perceived
-            do (with-fields (pose id) equip
-                 (setf equips
-                       (acons (car (rassoc id (symbol-codes 'saphari_msgs-msg:equipment)))
-                              (cl-transforms:origin 
-                               (cl-transforms:transform-pose *head-kinect-transform* 
-                                                             (cl-tf:msg->pose-stamped pose)))
-                              equips)))))
-    (loop for old-equip in old-equips
-          do (unless (assoc (car old-equip) equips)
-               (push old-equip equips)))
-    (setf (value equips-fl) equips)))
+(defun equipments-in-direction (equipments ray)
+  "Returns the `equipments' as an  alist associated with their distance to the `ray'. The list is sorted
+by the distance with the equipment with the shortest distance as first element. The distance for equipments
+that don't lay in the direction of the ray is nil."
+  (let ((equip-dists (mapcar (lambda (equip)
+                               (let ((point (cl-transforms:origin 
+                                             (cl-transforms:transform *head-kinect-transform*
+                                                                      (pose-stamped equip)))))
+                                 `(,equip . ,(unless (is-behind-ray ray point) 
+                                               (distance-to-ray ray point)))))
+                             equipments)))
+    (sort equip-dists #'is-smaller-than :key #'cdr)))
 
-(defun sort-equips (equips fit)
-  (let ((equips-dist nil))
-    (loop for equip in equips
-          do (setf equips-dist 
-                   (acons (car equip)
-                          (unless (is-behind-ray (first fit) (second fit) (cdr equip))
-                            (cl-transforms:v-norm (distance-to-ray (first fit) 
-                                                                   (second fit) 
-                                                                   (cdr equip))))
-                          equips-dist)))
-    (sort equips-dist (lambda (x1 x2) 
-                        (when x1 
-                          (if x2
-                              (< x1 x2)
-                              t)))
-          :key #'cdr)))
-               
+(defun is-smaller-than (x1 x2)
+  "Returns nil if `x1' is nil or `x1' >= `x2'."
+  (when x1
+    (if x2 (< x1 x2) t)))
+

@@ -28,139 +28,62 @@
 
 (in-package :cram-saphari-review-2)
 
+(defvar *human-subscriber* nil)
 
-(defvar *sub-human* nil)
+(defvar *equipment-subscriber* nil)
 
-(defvar *sub-equipment* nil)
+(defvar *visualization-publisher* nil)
 
-(defvar *visualization-pub* nil)
+;;(defvar *human-buffer* nil)
 
-
-#|
-(defparameter *left-hand* (make-fluent))
-
-(defparameter *left-hand-position* (fl-funcall #'get-bodypart-position *left-hand*))
-
-(defparameter *scalpel* (make-fluent))
-
-(defparameter *scalpel-position* (fl-funcall #'get-equipment-position *scalpel*))
-
-(defparameter *dist-left-hand-scalpel* (fl-funcall #'dist *left-hand-position* *scalpel-position*))
-
-(defparameter *dist-pub* (fl-funcall (lambda (dist) (when *pub* (publish-msg *pub* :data dist))) *dist-left-hand-scalpel*))
-
-|#
-
-(defparameter *equipments* (list :bowl (make-fluent) :clamp_big (make-fluent) 
-                                 :clamp_small (make-fluent) :scalpel (make-fluent) 
-                                 :scissors (make-fluent)))
-
-(defparameter *bodyparts* (list :lefthand (make-fluent) :righthand (make-fluent)))
-
-(defvar *equipment-positions* nil)
-
-(defvar *bodypart-positions* nil)
-
-(defvar *bodypart-equipment-distances* nil)
-
-(defvar *bodypart-directions* nil)
-
-(defvar *point-buffer* nil)
-
+;; TODO: remove this eventually
+(defvar *human-fluent*)
+(defvar *equipment-fluent*)
 (defun init ()
-  (init2)
+  (setf *human-fluent*
+        (nth-value 1 (make-human-subscriber)))
+  (setf *equipment-fluent*
+        (nth-value 1 (make-equipment-subscriber)))
+  (make-visualization-publisher))
+(defun test ()
+  (defparameter *buffer* (make-buffer-fluent *human-fluent* 5))
+  (defparameter *direction* (fl-funcall (lambda (buffer)
+                                          (when (> (length buffer) 2)
+                                            (get-direction buffer :lefthand)))
+                                          *buffer*)))
+                                                           
 
-  ;; initialize the equipment position fluents
-  (loop for (key value) on *equipments* by #'cddr
-        do (push (fl-funcall #'get-equipment-position value)
-                 *equipment-positions*)
-           (push key *equipment-positions*))
+(defun make-human-subscriber ()
+  "Creates a subscriber for the topic '/saphari/human' and a fluent that is
+filled with the content from that topic. Returns the subscriber and the fluent."
+  (let ((human-fl (make-fluent)))
+    (setf *human-subscriber* 
+          (subscribe "/saphari/human" "saphari_msgs/Human" 
+                     (lambda (msg) 
+                       (setf (value human-fl) (from-msg msg)))))
+    (values *human-subscriber* human-fl)))
 
-  ;; initialize the bodypart position fluents
-  (loop for (key value) on *bodyparts* by #'cddr
-        do (push (fl-funcall #'get-bodypart-position value)
-                 *bodypart-positions*)
-           (push key *bodypart-positions*))  
+(defun make-equipment-subscriber ()
+  "Creates a subscriber for the topic '/detect_equipment' and a fluent that is
+filled with the content from that topic. Returns the subscriber and the fluent."
+  (let ((equipment-fl (make-fluent)))
+    (save-head-shoulder-transform)
+    (setf *equipment-subscriber* 
+          (subscribe "/detect_equipment" "saphari_msgs/PerceivedEquipment" 
+                     (lambda (msg) (setf (value equipment-fl) (from-msg msg)))))
+    (values *equipment-subscriber* equipment-fl)))
 
-  ;; initialize the fluents for the distance between a bodypart and a equipment
-  (loop for (body-key body-value) on *bodypart-positions* by #'cddr
-        do (let ((equip-dists nil))
-             (loop for (equip-key equip-value) on *equipment-positions* by #'cddr
-                   do (push (fl-funcall #'dist body-value equip-value)
-                            equip-dists)
-                      (push equip-key equip-dists))
-             (push equip-dists *bodypart-equipment-distances*)
-             (push body-key *bodypart-equipment-distances*)))
+(defun make-visualization-publisher ()
+  "Creates and returns an advertiser for the topic 'visualization_msgs/Marker'."
+  (setf *visualization-publisher* (advertise "/visualization_marker" "visualization_msgs/Marker")))
 
-  ;; fluent for the direction a bodypart is moving in
-  (loop for (key value) on *bodypart-positions* by #'cddr
-        do (let ((buffer (make-fluent)))
-             (setf *point-buffer* 
-                   (fl-funcall (lambda (elem) 
-                                 (when elem
-                                   (setf (value buffer) (add-to-buffer (value buffer) elem)))) 
-                               value))
-             (push (fl-funcall (lambda (b) (when (> (length b) 1) (line-fitting-3d b))) buffer) 
-                   *bodypart-directions*)
-             (push key *bodypart-directions*)))
-
-  ;; set the subscriber and publisher
-  (setf *sub-human* 
-        (subscribe "/saphari/human" "saphari_msgs/Human" 
-                   (lambda (msg) (set-fluents *bodyparts* msg
-                                              #'get-bodypart-with-label
-                                              'saphari_msgs-msg:bodypart)))
-        *sub-equipment* 
-        (subscribe "/detect_equipment" "saphari_msgs/PerceivedEquipment"
-                   (lambda (msg) (set-fluents *equipments* msg
-                                              #'get-equipment-with-label
-                                              'saphari_msgs-msg:equipment)))
-         *visualization-pub* (advertise "/visualization_marker" "visualization_msgs/Marker")))
-
-(defun stop ()
-  (setf *equipment-positions* nil)
-  (setf *bodypart-positions* nil)
-  (setf *bodypart-equipment-distances* nil)
-  (setf *bodypart-directions* nil)
-  (unsubscribe *sub-human*)
-  (unsubscribe *sub-equipment*))
-
-(defun set-fluents (plist msg get-part-fn msg-type)
-  (loop for (key value) on plist by #'cddr
-        do (let ((part (funcall get-part-fn msg (symbol-code msg-type key))))
-             (when part
-               (setf (value (getf plist key)) part)))))
-
-#|
-(defun get-target-equipment (bodypart)
-  "Returns a fluent with a list of equipments. The equipments are sorted by the propability
-   of being the equipment the bodypart is moving to."
-  (let ((bp-fl (getf *bodypart-directions* bodypart))
-        (eq-fls nil)
-    (loop for (key value) on *equipment-positions* by #'cddr
-          do (acons key
-                    (fl-funcall (lambda (fit equip)
-                                  (unless (is-behind-ray (first fit) (second fit) equip)
-                                    (cl-transforms:v-norm (distance-to-ray (first fit) 
-                                                                           (second fit) 
-                                                                           equip))))
-                                bp-fl value)
-                    eq-fls))
-    (fl-sort eq-fls))))
-
-(defun sort-equips (&rest equips)
-  (sort equips #'< :key #'cdr))
-
-(defmacro fl-sort (equips)
-  `(fl-funcall #'sort-equips ,@equips))
-|#
+(defun cleanup ()
+  "Unsubscribes from all topics"
+  (when *human-subscriber* (unsubscribe *human-subscriber*))
+  (setf *human-subscriber* nil)
+  (when *equipment-subscriber* (unsubscribe *equipment-subscriber*))
+  (setf *equipment-subscriber* nil)
+  (setf *visualization-publisher* nil))
 
 
   
-  
-
-
-    
-
-
-

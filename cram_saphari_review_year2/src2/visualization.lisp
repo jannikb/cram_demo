@@ -28,6 +28,19 @@
 
 (in-package :cram-saphari-review-2)
 
+(defun show-direction (ray id)
+  "Publishes an arrow with the origin of `ray' as start and the origin + direction of `ray'
+as end point."
+  (publish-visualization-marker (cl-tf:make-pose-stamped "/shoulder_kinect_rgb_frame" 
+                                                         (ros-time) 
+                                                         (cl-transforms:make-identity-vector)
+                                                         (cl-transforms:make-identity-rotation)) 
+                                :points (vector (cl-tf:point->msg (origin ray))
+                                                (cl-tf:point->msg (cl-transforms:v+ (origin ray)
+                                                                                    (direction ray))))
+                                :scale-x 0.05 :scale-y 0.1
+                                :id id))
+
 (defun capped (value min max)
   (if (and min (< value min))
       min
@@ -50,9 +63,10 @@
                                                     (color-b 1)
                                                     (lifetime 50)
                                                     points)
+  "Publishes an visualization marker with the given parameters."
   (let ((origin (cl-tf:origin pose-stamped))
         (orientation (cl-tf:orientation pose-stamped)))
-    (publish *visualization-pub*
+    (publish *visualization-publisher*
              (make-message "visualization_msgs/Marker"
                            (frame_id header) (cl-tf:frame-id pose-stamped)
                            (stamp header)  (ros-time)
