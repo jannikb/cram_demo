@@ -85,5 +85,11 @@ number), as defined in 'saphari_msgs-msg:BodyPart'. If nothing is found, returns
           (rassoc body-part-code (symbol-codes 'saphari_msgs-msg:BodyPart))))
     (when body-part-symbol-code
       (car body-part-symbol-code))))
+
+(defun get-equipment-symbol (equipment-id)
+  (let ((equipment-symbol
+          (rassoc equipment-id (symbol-codes 'saphari_msgs-msg:Equipment))))
+    (when equipment-symbol
+      (car equipment-symbol))))
             
               

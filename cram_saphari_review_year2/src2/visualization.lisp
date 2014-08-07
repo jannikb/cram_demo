@@ -28,10 +28,11 @@
 
 (in-package :cram-saphari-review-2)
 
-(defun show-direction (ray id)
+(defun show-direction (pub ray id)
   "Publishes an arrow with the origin of `ray' as start and the origin + direction of `ray'
 as end point."
-  (publish-visualization-marker (cl-tf:make-pose-stamped "/shoulder_kinect_rgb_frame" 
+  (publish-visualization-marker pub
+                                (cl-tf:make-pose-stamped "/shoulder_kinect_rgb_frame" 
                                                          (ros-time) 
                                                          (cl-transforms:make-identity-vector)
                                                          (cl-transforms:make-identity-rotation)) 
@@ -48,25 +49,25 @@ as end point."
           max
           value)))
 
-(defun publish-visualization-marker (pose-stamped &key 
-                                                    (id 0) 
-                                                    (type :arrow) 
-                                                    min-x max-x
-                                                    min-y max-y
-                                                    min-z max-z
-                                                    (scale-x 0.3)
-                                                    (scale-y 0.15)
-                                                    (scale-z 0.15)
-                                                    (color-a 1)
-                                                    (color-r 1)
-                                                    (color-g 1)
-                                                    (color-b 1)
-                                                    (lifetime 50)
-                                                    points)
+(defun publish-visualization-marker (pub pose-stamped &key 
+                                                        (id 0) 
+                                                        (type :arrow) 
+                                                        min-x max-x
+                                                        min-y max-y
+                                                        min-z max-z
+                                                        (scale-x 0.3)
+                                                        (scale-y 0.15)
+                                                        (scale-z 0.15)
+                                                        (color-a 1)
+                                                        (color-r 1)
+                                                        (color-g 1)
+                                                        (color-b 1)
+                                                        (lifetime 50)
+                                                        points)
   "Publishes an visualization marker with the given parameters."
   (let ((origin (cl-tf:origin pose-stamped))
         (orientation (cl-tf:orientation pose-stamped)))
-    (publish *visualization-publisher*
+    (publish pub
              (make-message "visualization_msgs/Marker"
                            (frame_id header) (cl-tf:frame-id pose-stamped)
                            (stamp header)  (ros-time)

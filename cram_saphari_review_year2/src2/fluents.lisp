@@ -39,18 +39,31 @@
 ;; TODO: remove this eventually
 (defvar *human-fluent*)
 (defvar *equipment-fluent*)
+(defvar *lh-eq-dis-pub*)
 (defun init ()
   (setf *human-fluent*
         (nth-value 1 (make-human-subscriber)))
   (setf *equipment-fluent*
         (nth-value 1 (make-equipment-subscriber)))
-  (make-visualization-publisher))
+  (make-visualization-publisher)
+  (setf *lh-eq-dis-pub* (make-equipment-distance-publisher :lefthand)))
+(defvar *buffer* nil)
+(defvar *direction* nil)
+(defvar *equipment-distance*)
 (defun test ()
-  (defparameter *buffer* (make-buffer-fluent *human-fluent* 5))
-  (defparameter *direction* (fl-funcall (lambda (buffer)
+  (setf *buffer* (make-buffer-fluent *human-fluent* 5))
+  (setf *direction* (fl-funcall (lambda (buffer)
                                           (when (> (length buffer) 2)
                                             (get-direction buffer :lefthand)))
-                                          *buffer*)))
+                                          *buffer*))
+  (setf *equipment-distance* 
+        (fl-funcall #'equipments-in-direction *equipment-fluent* *direction*)))
+(defvar *direction-vis* nil)
+(defvar *equipment-distance-vis*)
+(defun test-vis ()
+  (setf *direction-vis* (fl-funcall #'show-direction *visualization-publisher* *direction* 1))
+  (setf *equipment-distance-vis* 
+        (fl-funcall #'publish-equipment-distances *lh-eq-dis-pub* *equipment-distance* 10)))
                                                            
 
 (defun make-human-subscriber ()
@@ -76,6 +89,36 @@ filled with the content from that topic. Returns the subscriber and the fluent."
 (defun make-visualization-publisher ()
   "Creates and returns an advertiser for the topic 'visualization_msgs/Marker'."
   (setf *visualization-publisher* (advertise "/visualization_marker" "visualization_msgs/Marker")))
+
+(defun make-equipment-distance-publisher (body-part)
+  (let ((equipment-labels '(:bowl :clamp_big :clamp_small :scalpel :scissors)))
+    (mapcar (lambda (label)
+              `(,label . ,(advertise (format nil "/equipment_distances/distance_to_~a/~a" 
+                                             body-part label)
+                                     "std_msgs/Float64")))
+            equipment-labels)))
+
+;;rqt_plot /equipment_distances/distance_to_LEFTHAND/BOWL /equipment_distances/distance_to_LEFTHAND/CLAMP_BIG/data /equipment_distances/distance_to_LEFTHAND/CLAMP_SMALL /equipment_distances/distance_to_LEFTHAND/SCALPEL /equipment_distances/distance_to_LEFTHAND/SCISSORS
+(defun publish-equipment-distances (equip-pubs equip-dists max-distance)
+  (mapcar (lambda (equip-pub)
+            (let* ((equip-dist (assoc (car equip-pub) equip-dists))
+                   (raw-dist (when equip-dist (cdr equip-dist)))
+                   (dist (if (and raw-dist (< raw-dist max-distance))
+                             raw-dist
+                             max-distance)))
+              (when equip-dist
+                (publish-msg (cdr equip-pub)
+                             :data dist))))
+          equip-pubs))
+#|
+  (publish pub
+           (apply #'roslisp::make-message-fn 
+                  (cons "equipment_msgs/EquipmentDistance"
+                        (mapcan (lambda (equip-dist)
+                                  `((,(get-equipment-symbol (id (car equip-dist))))
+                                    ,(- (cdr equip-dist))))
+                                equip-dists)))))
+|#
 
 (defun cleanup ()
   "Unsubscribes from all topics"

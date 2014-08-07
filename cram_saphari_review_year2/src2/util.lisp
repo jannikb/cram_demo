@@ -42,7 +42,7 @@
                                                          :target-frame "/shoulder_kinect_rgb_frame")))
 
 (defun get-body-part (body body-part-label)
-  "Returns the body part from the `body' with the to `body-part-label' associated id."
+  "Returns the body part from the `body' with the label `body-part-label'."
   (find body-part-label (body-parts body) :key #'label))
 
 (defun 3d-vector->list (3d-vector)
@@ -85,8 +85,8 @@ that don't lay in the direction of the ray is nil."
                                (let ((point (cl-transforms:origin 
                                              (cl-transforms:transform *head-kinect-transform*
                                                                       (pose-stamped equip)))))
-                                 `(,equip . ,(unless (is-behind-ray ray point) 
-                                               (distance-to-ray ray point)))))
+                                 `(,(get-equipment-symbol (id equip)) . ,(unless (is-behind-ray ray point) 
+                                                                           (distance-to-ray ray point)))))
                              equipments)))
     (sort equip-dists #'is-smaller-than :key #'cdr)))
 
