@@ -19,7 +19,6 @@
                :cl-3d-shapes
                :cl-transforms
                :visualization_msgs-msg
-               :equipment_msgs-msg
                :cl-tf
                :gsll)
   :components

@@ -57,11 +57,17 @@
                                             (get-direction buffer :lefthand)))
                                           *buffer*))
   (setf *equipment-distance* 
-        (fl-funcall #'equipments-in-direction *equipment-fluent* *direction*)))
+        (fl-funcall (lambda (eq-fl dir) 
+                      (when dir
+                        (equipments-in-direction eq-fl dir)))
+                    *equipment-fluent* *direction*)))
 (defvar *direction-vis* nil)
 (defvar *equipment-distance-vis*)
 (defun test-vis ()
-  (setf *direction-vis* (fl-funcall #'show-direction *visualization-publisher* *direction* 1))
+  (setf *direction-vis* (fl-funcall (lambda (vis-pub dir id)
+                                      (when (and vis-pub dir)
+                                        (show-direction vis-pub dir id)))
+                                    *visualization-publisher* *direction* 1))
   (setf *equipment-distance-vis* 
         (fl-funcall #'publish-equipment-distances *lh-eq-dis-pub* *equipment-distance* 10)))
                                                            
@@ -98,7 +104,7 @@ filled with the content from that topic. Returns the subscriber and the fluent."
                                      "std_msgs/Float64")))
             equipment-labels)))
 
-;;rqt_plot /equipment_distances/distance_to_LEFTHAND/BOWL /equipment_distances/distance_to_LEFTHAND/CLAMP_BIG/data /equipment_distances/distance_to_LEFTHAND/CLAMP_SMALL /equipment_distances/distance_to_LEFTHAND/SCALPEL /equipment_distances/distance_to_LEFTHAND/SCISSORS
+;;rqt_plot /equipment_distances/distance_to_LEFTHAND/BOWL/data /equipment_distances/distance_to_LEFTHAND/CLAMP_BIG/data /equipment_distances/distance_to_LEFTHAND/CLAMP_SMALL/data /equipment_distances/distance_to_LEFTHAND/SCALPEL/data /equipment_distances/distance_to_LEFTHAND/SCISSORS/data
 (defun publish-equipment-distances (equip-pubs equip-dists max-distance)
   (mapcar (lambda (equip-pub)
             (let* ((equip-dist (assoc (car equip-pub) equip-dists))
