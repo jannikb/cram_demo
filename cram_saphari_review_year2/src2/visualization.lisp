@@ -31,16 +31,17 @@
 (defun show-direction (pub ray id)
   "Publishes an arrow with the origin of `ray' as start and the origin + direction of `ray'
 as end point."
-  (publish-visualization-marker pub
-                                (cl-tf:make-pose-stamped "/shoulder_kinect_rgb_frame" 
-                                                         (ros-time) 
-                                                         (cl-transforms:make-identity-vector)
-                                                         (cl-transforms:make-identity-rotation)) 
-                                :points (vector (cl-tf:point->msg (origin ray))
-                                                (cl-tf:point->msg (cl-transforms:v+ (origin ray)
-                                                                                    (direction ray))))
-                                :scale-x 0.05 :scale-y 0.1
-                                :id id))
+  (let* ((scaled-direction (cl-transforms:v* (direction ray) (+ 0.1 (* (size ray) 3))))
+         (direction-point (cl-transforms:v+ (origin ray) scaled-direction)))
+    (publish-visualization-marker pub
+                                  (cl-tf:make-pose-stamped "/shoulder_kinect_rgb_frame" 
+                                                           (ros-time) 
+                                                           (cl-transforms:make-identity-vector)
+                                                           (cl-transforms:make-identity-rotation)) 
+                                  :points (vector (cl-tf:point->msg (origin ray))
+                                                  (cl-tf:point->msg direction-point))
+                                  :scale-x 0.05 :scale-y 0.1
+                                  :id id)))
 
 (defun capped (value min max)
   (if (and min (< value min))

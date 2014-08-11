@@ -97,6 +97,8 @@ filled with the content from that topic. Returns the subscriber and the fluent."
   (setf *visualization-publisher* (advertise "/visualization_marker" "visualization_msgs/Marker")))
 
 (defun make-equipment-distance-publisher (body-part)
+  "Creates an advertiser for every equipment and returns them in an alist with the label of the equipment.
+   `body-part' specifies the body part which the distance should be relativ to."
   (let ((equipment-labels '(:bowl :clamp_big :clamp_small :scalpel :scissors)))
     (mapcar (lambda (label)
               `(,label . ,(advertise (format nil "/equipment_distances/distance_to_~a/~a" 
@@ -106,6 +108,11 @@ filled with the content from that topic. Returns the subscriber and the fluent."
 
 ;;rqt_plot /equipment_distances/distance_to_LEFTHAND/BOWL/data /equipment_distances/distance_to_LEFTHAND/CLAMP_BIG/data /equipment_distances/distance_to_LEFTHAND/CLAMP_SMALL/data /equipment_distances/distance_to_LEFTHAND/SCALPEL/data /equipment_distances/distance_to_LEFTHAND/SCISSORS/data
 (defun publish-equipment-distances (equip-pubs equip-dists max-distance)
+  "Publishes the distances for the eqipments in `equip-dists' to the corresponding topics in
+`equip-pubs'. 
+  `equip-pubs' is an alist with the equipment labels and the advertisers.
+  `equip-dists' is an alist with the equipment labels and their distances.
+  `max-distance' is the distance that will be published if a distance is greater than `max-distance' or nil." 
   (mapcar (lambda (equip-pub)
             (let* ((equip-dist (assoc (car equip-pub) equip-dists))
                    (raw-dist (when equip-dist (cdr equip-dist)))
@@ -116,15 +123,6 @@ filled with the content from that topic. Returns the subscriber and the fluent."
                 (publish-msg (cdr equip-pub)
                              :data dist))))
           equip-pubs))
-#|
-  (publish pub
-           (apply #'roslisp::make-message-fn 
-                  (cons "equipment_msgs/EquipmentDistance"
-                        (mapcan (lambda (equip-dist)
-                                  `((,(get-equipment-symbol (id (car equip-dist))))
-                                    ,(- (cdr equip-dist))))
-                                equip-dists)))))
-|#
 
 (defun cleanup ()
   "Unsubscribes from all topics"

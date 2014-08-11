@@ -32,7 +32,9 @@
   ((origin :initarg :origin
            :reader origin)
    (direction :initarg :direction
-              :reader direction))
+              :reader direction)
+   (size :initarg :size
+           :reader size))
   (:documentation "Representation of a ray. `origin' is the start and `direction' the 
 direction of the ray."))
 
@@ -60,16 +62,20 @@ and the centroid of the points marks the start of the ray."
                                                        :dimensions '(3 (length points)) 
                                                        :initial-contents m))
       (declare (ignore ort-matrix))
-      (make-instance 'ray
-                     :origin centroid
-                     :direction (direction-vector singular-values singular-vectors)))))
+      (multiple-value-bind (direction length) 
+          (direction-and-length singular-values singular-vectors)
+        (make-instance 'ray
+                       :origin centroid
+                       :direction direction
+                       :size length)))))
 
-(defun direction-vector (singular-values singular-vectors)
+(defun direction-and-length (singular-values singular-vectors)
   "Returns the singular vector which corresponds with the largest singular value.
 `singular-values' list of the singular values.
 `singular-vectors' list of the singula vectors which are list of numbers."
-  (list->3d-vector (cdr (reduce (lambda (s1 s2) (if (> (car s1) (car s2)) s1 s2))
-                                (mapcar (lambda (s-value s-vector) `(,s-value . ,s-vector)) 
-                                        (grid:contents singular-values)
-                                        (grid:contents (grid:transpose singular-vectors)))))))
-      
+  (let ((dir-len (reduce (lambda (s1 s2) (if (> (car s1) (car s2)) s1 s2))
+                         (mapcar (lambda (s-value s-vector) `(,s-value . ,s-vector)) 
+                                 (grid:contents singular-values)
+                                 (grid:contents (grid:transpose singular-vectors))))))
+    (values (list->3d-vector (cdr dir-len)) (car dir-len))))
+    
