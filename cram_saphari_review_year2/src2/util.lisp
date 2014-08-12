@@ -82,9 +82,10 @@
   "Returns the `equipments' as an  alist associated with their distance to the `ray'. The list is sorted
 by the distance with the equipment with the shortest distance as first element. The distance for equipments
 that don't lay in the direction of the ray is nil."
-  (let ((equip-dists (mapcar (lambda (equip)
+  (let* ((head-shoulder-transform (get-head-shoulder-transform))
+         (equip-dists (mapcar (lambda (equip)
                                (let ((point (cl-transforms:origin 
-                                             (cl-transforms:transform (get-head-shoulder-transform)
+                                             (cl-transforms:transform head-shoulder-transform
                                                                       (pose-stamped equip)))))
                                  `(,(get-equipment-symbol (id equip)) . ,(unless (is-behind-ray ray point) 
                                                                            (distance-to-ray ray point)))))
