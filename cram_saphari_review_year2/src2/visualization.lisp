@@ -43,19 +43,9 @@ as end point."
                                   :scale-x 0.05 :scale-y 0.1
                                   :id id)))
 
-(defun capped (value min max)
-  (if (and min (< value min))
-      min
-      (if (and max (> value max))
-          max
-          value)))
-
 (defun publish-visualization-marker (pub pose-stamped &key 
                                                         (id 0) 
                                                         (type :arrow) 
-                                                        min-x max-x
-                                                        min-y max-y
-                                                        min-z max-z
                                                         (scale-x 0.3)
                                                         (scale-y 0.15)
                                                         (scale-z 0.15)
@@ -77,12 +67,9 @@ as end point."
                            type (symbol-code 'visualization_msgs-msg:marker 
                                              type)
                            action 0
-                           (x position pose) (capped (cl-tf:x origin)
-                                                     min-x max-x)
-                           (y position pose) (capped (cl-tf:y origin)
-                                                     min-y max-y)
-                           (z position pose) (capped (cl-tf:z origin)
-                                                     min-z max-z)
+                           (x position pose) (cl-tf:x origin)
+                           (y position pose) (cl-tf:y origin)
+                           (z position pose) (cl-tf:z origin)
                            (x orientation pose) (cl-tf:x orientation)
                            (y orientation pose) (cl-tf:y orientation)
                            (z orientation pose) (cl-tf:z orientation)
