@@ -39,37 +39,57 @@
 ;; TODO: remove this eventually
 (defvar *human-fluent*)
 (defvar *equipment-fluent*)
-(defvar *lh-eq-dis-pub*)
+(defvar *lh-eq-reach-pub*)
+(defvar *lh-eq-absolute-pub*)
 (defun init ()
   (setf *human-fluent*
         (nth-value 1 (make-human-subscriber)))
   (setf *equipment-fluent*
         (nth-value 1 (make-equipment-subscriber)))
   (make-visualization-publisher)
-  (setf *lh-eq-dis-pub* (make-equipment-distance-publisher :lefthand)))
+  (setf *lh-eq-reach-pub* (make-equipment-publishers "reaching_distance_lh"))
+  (setf *lh-eq-absolute-pub* (make-equipment-publishers "absolute_distance_lh")))
 (defvar *buffer* nil)
 (defvar *direction* nil)
-(defvar *equipment-distance*)
+(defvar *reaching-distances*)
+(defvar *absolute-distances*)
 (defun test ()
   (setf *buffer* (make-buffer-fluent *human-fluent* 5))
   (setf *direction* (fl-funcall (lambda (buffer)
                                           (when (> (length buffer) 2)
                                             (get-direction buffer :lefthand)))
                                           *buffer*))
-  (setf *equipment-distance* 
+  (setf *reaching-distances* 
         (fl-funcall (lambda (eq-fl dir) 
                       (when dir
                         (equipments-in-direction eq-fl dir)))
-                    *equipment-fluent* *direction*)))
+                    *equipment-fluent* *direction*))
+  (setf *absolute-distances*
+        (fl-funcall (lambda (eq-fl human-fl) 
+                      (when (and eq-fl human-fl)
+                        (let ((centroid (get-body-part-centroid human-fl :lefthand))
+                              (head-shoulder-transform (get-head-shoulder-transform)))
+                          (mapcar (lambda (eq)
+                                    (cons (get-equipment-symbol (id eq))
+                                          (cl-transforms:v-dist (cl-transforms:origin 
+                                                                 (cl-transforms:transform 
+                                                                  head-shoulder-transform
+                                                                  (pose-stamped eq)))
+                                                                centroid)))
+                                  eq-fl))))
+                    *equipment-fluent* *human-fluent*)))
 (defvar *direction-vis* nil)
-(defvar *equipment-distance-vis*)
+(defvar *reaching-distance-vis*)
+(defvar *absolute-distance-vis*)
 (defun test-vis ()
   (setf *direction-vis* (fl-funcall (lambda (vis-pub dir id)
                                       (when (and vis-pub dir)
                                         (show-direction vis-pub dir id)))
                                     *visualization-publisher* *direction* 1))
-  (setf *equipment-distance-vis* 
-        (fl-funcall #'publish-equipment-distances *lh-eq-dis-pub* *equipment-distance* 10)))
+  (setf *reaching-distance-vis* 
+        (fl-funcall #'publish-equipment-values *lh-eq-reach-pub* *reaching-distances* 5))
+  (setf *absolute-distance-vis*
+        (fl-funcall #'publish-equipment-values *lh-eq-absolute-pub* *absolute-distances* 5)))
                                                            
 
 (defun make-human-subscriber ()
@@ -98,34 +118,30 @@ filled with the content from that topic. Returns the subscriber and the fluent."
   (setf *visualization-publisher* (advertise "/visualization_marker" 
                                              "visualization_msgs/Marker")))
 
-(defun make-equipment-distance-publisher (body-part)
+(defun make-equipment-publishers (name)
   "Creates an advertiser for every equipment and returns them in an alist with the 
 label of the equipment.
    `body-part' specifies the body part which the distance should be relativ to."
   (let ((equipment-labels '(:bowl :clamp_big :clamp_small :scalpel :scissors)))
     (mapcar (lambda (label)
-              `(,label . ,(advertise (format nil "/equipment_distances/distance_to_~a/~a" 
-                                             body-part label)
-                                     "std_msgs/Float64")))
+              (cons label 
+                    (advertise (format nil "/equipment_distances/~a/~a" name label)
+                               "std_msgs/Float64")))
             equipment-labels)))
 
 ;;rqt_plot /equipment_distances/distance_to_LEFTHAND/BOWL/data /equipment_distances/distance_to_LEFTHAND/CLAMP_BIG/data /equipment_distances/distance_to_LEFTHAND/CLAMP_SMALL/data /equipment_distances/distance_to_LEFTHAND/SCALPEL/data /equipment_distances/distance_to_LEFTHAND/SCISSORS/data
-(defun publish-equipment-distances (equip-pubs equip-dists max-distance)
-  "Publishes the distances for the eqipments in `equip-dists' to the corresponding topics in
+(defun publish-equipment-values (equip-pubs equip-values max-value)
+  "Publishes the values for the eqipments in `equip-dists' to the corresponding topics in
 `equip-pubs'. 
   `equip-pubs' is an alist with the equipment labels and the advertisers.
-  `equip-dists' is an alist with the equipment labels and their distances.
-  `max-distance' is the distance that will be published if a distance is greater than 
-`max-distance' or nil." 
+  `equip-values' is an alist with the equipment labels and their values.
+  `max-value' is the distance that will be published if a distance is greater than 
+`max-value' or nil." 
   (mapcar (lambda (equip-pub)
-            (let* ((equip-dist (assoc (car equip-pub) equip-dists))
-                   (raw-dist (when equip-dist (cdr equip-dist)))
-                   (dist (if (and raw-dist (< raw-dist max-distance))
-                             raw-dist
-                             max-distance)))
-              (when equip-dist
+            (let* ((equip-value (assoc (car equip-pub) equip-values)))
+              (when equip-value
                 (publish-msg (cdr equip-pub)
-                             :data dist))))
+                             :data (min (cdr equip-value) max-value)))))
           equip-pubs))
 
 (defun cleanup ()

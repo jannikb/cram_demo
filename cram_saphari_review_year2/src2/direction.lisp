@@ -43,7 +43,7 @@ direction of the ray."))
 `body-buffer' is a list of at least 3 configurations of the body.
 `body-part-label' is the label of the bodypart as a symbol, e.g. :lefthand."
   (let ((body-part-poses (mapcar (lambda (body)
-                                   (centroid (shape (get-body-part body body-part-label))))
+                                   (get-body-part-centroid body body-part-label))
                                  body-buffer)))
     (fit-line body-part-poses)))
 

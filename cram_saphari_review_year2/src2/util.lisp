@@ -42,9 +42,9 @@
   (wait-for-and-lookup-transform 
    (get-tf-listener) 0.0 "/head_xtion_rgb_optical_frame" "/shoulder_kinect_rgb_frame"))
 
-(defun get-body-part (body body-part-label)
+(defun get-body-part-centroid (body body-part-label)
   "Returns the body part from the `body' with the label `body-part-label'."
-  (find body-part-label (body-parts body) :key #'label))
+  (centroid (shape (find body-part-label (body-parts body) :key #'label))))
 
 (defun 3d-vector->list (3d-vector)
   "Converts the `3d-vector' into a list of numbers."
@@ -65,18 +65,35 @@
                 fluent)))
 
 (defun distance-to-ray (ray point)
+  "Returns the distance from `point' to the line represented by `ray' or
+the distance from `point' to the origin of `ray' if `point' doesn't lie in
+the direction of `ray'."
+  (if (is-behind-ray ray point)
+      (cl-transforms:v-dist (origin ray) point)
+      (distance-to-line ray point)))
+
+;; (defun distance-to-line (ray point)
+;;   "Returns the distance from the `point' to the line represented by `ray'."
+;;   (let ((a-p (cl-transforms:v- (origin ray) point))
+;;         (n (cl-transforms:v- (origin ray) (direction ray))))
+;;     (cl-transforms:v-norm 
+;;      (cl-transforms:v- a-p (cl-transforms:v* n (cl-transforms:dot-product a-p n))))))
+
+(defun distance-to-line (ray point)
   "Returns the distance from the `point' to the line represented by `ray'."
-  (let ((a-p (cl-transforms:v- (origin ray) point))
-        (n (cl-transforms:v- (origin ray) (direction ray))))
-    (cl-transforms:v-norm (cl-transforms:v- a-p (cl-transforms:v* n (cl-transforms:dot-product a-p n))))))
+  (let ((x0 point)
+        (x1 (origin ray))
+        (x2 (direction ray)))
+    (/ (cl-transforms:v-norm (cl-transforms:cross-product (cl-transforms:v- x0 x1) 
+                                                          (cl-transforms:v- x0 x2)))
+       (cl-transforms:v-norm (cl-transforms:v- x2 x1)))))
 
 (defun is-behind-ray (ray point)
   "Returns nil if the `point' lays behind the plane created by the origin and direction of the `ray'."
   (let ((v1 (direction ray))
         (v2 (cl-transforms:v- point (origin ray))))
-    (> 0
-       (/ (cl-transforms:dot-product v1 v2) 
-          (* (cl-transforms:v-norm v1) (cl-transforms:v-norm v2))))))
+    (> 0 (/ (cl-transforms:dot-product v1 v2) 
+            (* (cl-transforms:v-norm v1) (cl-transforms:v-norm v2))))))
 
 (defun equipments-in-direction (equipments ray)
   "Returns the `equipments' as an  alist associated with their distance to the `ray'. The list is sorted
@@ -84,18 +101,13 @@ by the distance with the equipment with the shortest distance as first element. 
 that don't lay in the direction of the ray is nil."
   (let* ((head-shoulder-transform (get-head-shoulder-transform))
          (equip-dists (mapcar (lambda (equip)
-                               (let ((point (cl-transforms:origin 
-                                             (cl-transforms:transform head-shoulder-transform
-                                                                      (pose-stamped equip)))))
-                                 `(,(get-equipment-symbol (id equip)) . ,(unless (is-behind-ray ray point) 
-                                                                           (distance-to-ray ray point)))))
-                             equipments)))
-    (sort equip-dists #'is-smaller-than :key #'cdr)))
-
-(defun is-smaller-than (x1 x2)
-  "Returns nil if `x1' is nil or `x1' >= `x2'."
-  (when x1
-    (if x2 (< x1 x2) t)))
+                                (cons (get-equipment-symbol (id equip))
+                                      (distance-to-ray ray 
+                                                       (cl-transforms:origin 
+                                                        (cl-transforms:transform head-shoulder-transform
+                                                                                 (pose-stamped equip))))))
+                              equipments)))
+    (sort equip-dists #'< :key #'cdr)))
 
 (defun update-equipments (new-equipments old-equipments)
   "Returns a list containing all elements of `new-equipment' and the the equipments from
