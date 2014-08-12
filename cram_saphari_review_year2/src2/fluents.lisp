@@ -88,15 +88,19 @@ filled with the content from that topic. Returns the subscriber and the fluent."
   (let ((equipment-fl (make-fluent)))
     (setf *equipment-subscriber* 
           (subscribe "/detect_equipment" "saphari_msgs/PerceivedEquipment" 
-                     (lambda (msg) (setf (value equipment-fl) (from-msg msg)))))
+                     (lambda (msg) 
+                       (setf (value equipment-fl) 
+                             (update-equipments (from-msg msg) (value equipment-fl))))))
     (values *equipment-subscriber* equipment-fl)))
 
 (defun make-visualization-publisher ()
   "Creates and returns an advertiser for the topic 'visualization_msgs/Marker'."
-  (setf *visualization-publisher* (advertise "/visualization_marker" "visualization_msgs/Marker")))
+  (setf *visualization-publisher* (advertise "/visualization_marker" 
+                                             "visualization_msgs/Marker")))
 
 (defun make-equipment-distance-publisher (body-part)
-  "Creates an advertiser for every equipment and returns them in an alist with the label of the equipment.
+  "Creates an advertiser for every equipment and returns them in an alist with the 
+label of the equipment.
    `body-part' specifies the body part which the distance should be relativ to."
   (let ((equipment-labels '(:bowl :clamp_big :clamp_small :scalpel :scissors)))
     (mapcar (lambda (label)
@@ -111,7 +115,8 @@ filled with the content from that topic. Returns the subscriber and the fluent."
 `equip-pubs'. 
   `equip-pubs' is an alist with the equipment labels and the advertisers.
   `equip-dists' is an alist with the equipment labels and their distances.
-  `max-distance' is the distance that will be published if a distance is greater than `max-distance' or nil." 
+  `max-distance' is the distance that will be published if a distance is greater than 
+`max-distance' or nil." 
   (mapcar (lambda (equip-pub)
             (let* ((equip-dist (assoc (car equip-pub) equip-dists))
                    (raw-dist (when equip-dist (cdr equip-dist)))

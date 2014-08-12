@@ -97,3 +97,12 @@ that don't lay in the direction of the ray is nil."
   (when x1
     (if x2 (< x1 x2) t)))
 
+(defun update-equipments (new-equipments old-equipments)
+  "Returns a list containing all elements of `new-equipment' and the the equipments from
+`old-equipments' which weren't in `new-equipments'."  
+  (mapcar (lambda (old-equip)
+            (unless (find (id old-equip) new-equipments :key #'id)
+              (push old-equip new-equipments)))
+          old-equipments)
+  new-equipments)
+
