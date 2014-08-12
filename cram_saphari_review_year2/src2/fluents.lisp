@@ -86,7 +86,6 @@ filled with the content from that topic. Returns the subscriber and the fluent."
   "Creates a subscriber for the topic '/detect_equipment' and a fluent that is
 filled with the content from that topic. Returns the subscriber and the fluent."
   (let ((equipment-fl (make-fluent)))
-    (save-head-shoulder-transform)
     (setf *equipment-subscriber* 
           (subscribe "/detect_equipment" "saphari_msgs/PerceivedEquipment" 
                      (lambda (msg) (setf (value equipment-fl) (from-msg msg)))))

@@ -30,16 +30,17 @@
 
 (defparameter *tf* nil)
 
-(defparameter *head-kinect-transform* nil)
-
-(defun save-head-shoulder-transform ()
+(defun get-tf-listener ()
   (unless *tf* (setf *tf* (make-instance 'cl-tf:transform-listener)))
-  (cl-tf:wait-for-transform *tf* 
-                            :source-frame "/head_xtion_rgb_optical_frame" 
-                            :target-frame "/shoulder_kinect_rgb_frame")
-  (setf *head-kinect-transform* (cl-tf:lookup-transform  *tf* 
-                                                         :source-frame "/head_xtion_rgb_optical_frame" 
-                                                         :target-frame "/shoulder_kinect_rgb_frame")))
+  *tf*)
+
+(defun wait-for-and-lookup-transform (tf time source-frame target-frame)
+  (cl-tf:wait-for-transform tf :time time :source-frame source-frame :target-frame target-frame)
+  (cl-tf:lookup-transform tf :time time :source-frame source-frame :target-frame target-frame))
+
+(defun get-head-shoulder-transform ()
+  (wait-for-and-lookup-transform 
+   (get-tf-listener) 0.0 "/head_xtion_rgb_optical_frame" "/shoulder_kinect_rgb_frame"))
 
 (defun get-body-part (body body-part-label)
   "Returns the body part from the `body' with the label `body-part-label'."
@@ -83,7 +84,7 @@ by the distance with the equipment with the shortest distance as first element. 
 that don't lay in the direction of the ray is nil."
   (let ((equip-dists (mapcar (lambda (equip)
                                (let ((point (cl-transforms:origin 
-                                             (cl-transforms:transform *head-kinect-transform*
+                                             (cl-transforms:transform (get-head-shoulder-transform)
                                                                       (pose-stamped equip)))))
                                  `(,(get-equipment-symbol (id equip)) . ,(unless (is-behind-ray ray point) 
                                                                            (distance-to-ray ray point)))))
