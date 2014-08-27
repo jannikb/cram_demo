@@ -72,13 +72,6 @@ the direction of `ray'."
       (cl-transforms:v-dist (origin ray) point)
       (distance-to-line ray point)))
 
-;; (defun distance-to-line (ray point)
-;;   "Returns the distance from the `point' to the line represented by `ray'."
-;;   (let ((a-p (cl-transforms:v- (origin ray) point))
-;;         (n (cl-transforms:v- (origin ray) (direction ray))))
-;;     (cl-transforms:v-norm 
-;;      (cl-transforms:v- a-p (cl-transforms:v* n (cl-transforms:dot-product a-p n))))))
-
 (defun distance-to-line (ray point)
   "Returns the distance from the `point' to the line represented by `ray'."
   (let ((x0 point)
